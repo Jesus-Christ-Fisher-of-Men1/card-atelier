@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { CardCanvas } from "@/components/CardCanvas";
 import { MediaFields } from "@/components/MediaPicker";
 import { AiMessageWriter } from "@/components/AiTools";
-import { CardExperience } from "@/components/CardExperience";
+import { CardExperience, InsidePage } from "@/components/CardExperience";
 import { ScripturePicker } from "@/components/ScripturePicker";
 import { CovenantCheck } from "@/components/CovenantCheck";
 
@@ -58,6 +58,7 @@ export default function Personalize() {
   };
 
   if (!t) return <div className="p-24 text-center text-stone-500">Loading…</div>;
+  const editable = t.message_editable !== false;
   return (
     <div className="max-w-[1300px] mx-auto px-5 lg:px-10 py-12 grid lg:grid-cols-12 gap-12" data-testid="personalize-page">
       <div className="lg:col-span-6">
@@ -68,10 +69,8 @@ export default function Personalize() {
             <div className="flip-scene mx-auto max-w-[400px]">
               <div className={`flip-inner ${side === "inside" ? "flipped" : ""}`}>
                 <div className="flip-face shadow-[0_30px_60px_-20px_rgba(18,17,19,0.4)]"><CardCanvas design={t.design} testId="personalize-card-front" /></div>
-                <div className="flip-face flip-back bg-[#FFFDF9] paper-grain p-[9%] flex flex-col justify-center text-center shadow-[0_30px_60px_-20px_rgba(18,17,19,0.4)]" data-testid="personalize-card-inside">
-                  <p className="font-script text-3xl text-[#E05A47] mb-3">Dear {f.recipient_name || "friend"},</p>
-                  <p className="font-display leading-relaxed whitespace-pre-wrap">{f.message || "Your message appears here."}</p>
-                  <p className="font-script text-2xl text-[#3A5A40] mt-4">— {f.sender_name || "With love"}</p>
+                <div className="flip-face flip-back shadow-[0_30px_60px_-20px_rgba(18,17,19,0.4)]" data-testid="personalize-card-inside">
+                  <InsidePage card={{ ...f, inside_bg: t.inside_bg, message: f.message || "Your message appears here." }} small />
                 </div>
               </div>
             </div>
@@ -85,12 +84,22 @@ export default function Personalize() {
       </div>
 
       <div className="lg:col-span-6 space-y-5">
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Your personal message</p>
-          <textarea rows={5} className={field} value={f.message} onChange={(e) => set({ message: e.target.value })} onFocus={() => setSide("inside")} data-testid="personalize-message-input" />
-        </div>
-        <AiMessageWriter occasion={t.occasion} onUse={(m) => { set({ message: m }); setSide("inside"); }} />
-        <ScripturePicker onUse={(s) => { set({ message: f.message ? `${f.message}\n\n${s}` : s }); setSide("inside"); }} />
+        {editable ? (
+          <>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Your personal message</p>
+              <textarea rows={5} className={field} value={f.message} onChange={(e) => set({ message: e.target.value })} onFocus={() => setSide("inside")} data-testid="personalize-message-input" />
+            </div>
+            <AiMessageWriter occasion={t.occasion} onUse={(m) => { set({ message: m }); setSide("inside"); }} />
+            <ScripturePicker onUse={(s) => { set({ message: f.message ? `${f.message}\n\n${s}` : s }); setSide("inside"); }} />
+          </>
+        ) : (
+          <div className="rounded-2xl border border-[#D4AF37]/40 bg-[#FFFDF9] p-5" data-testid="personalize-fixed-message">
+            <p className="text-sm font-semibold mb-2">The artist's message inside this card</p>
+            <p className="font-display italic whitespace-pre-wrap">{t.message}</p>
+            <p className="text-xs text-stone-500 mt-3">This card's words are set by the artist. You can still add music, your voice and a video.</p>
+          </div>
+        )}
         <MediaFields value={f} onChange={set} />
         <div className="rounded-2xl border border-stone-900/10 bg-white p-4 grid sm:grid-cols-2 gap-3" data-testid="personalize-delivery">
           <input className={field} placeholder="From (your name)" value={f.sender_name} onChange={(e) => set({ sender_name: e.target.value })} data-testid="personalize-sender-input" />
@@ -103,14 +112,14 @@ export default function Personalize() {
             {busy ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />} Buy & send · ${pricing[t.tier]?.price}
           </button>
           <button onClick={() => setPreview(true)} data-testid="personalize-preview-btn" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-stone-900/15 hover:bg-white transition-colors"><Eye size={16} /> Preview</button>
-          <button onClick={() => nav(`/create?from=${t.id}`)} data-testid="personalize-customize-btn" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-stone-900/15 hover:bg-white transition-colors"><Palette size={16} /> Customize design fully</button>
+          {editable && <button onClick={() => nav(`/create?from=${t.id}`)} data-testid="personalize-customize-btn" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-stone-900/15 hover:bg-white transition-colors"><Palette size={16} /> Customize design fully</button>}
         </div>
       </div>
 
       <Dialog open={preview} onOpenChange={setPreview}>
         <DialogContent className="max-w-5xl w-[96vw] h-[90vh] p-0 overflow-auto bg-[#121113] border-none" data-testid="personalize-preview-dialog">
           <DialogTitle className="sr-only">Card preview</DialogTitle>
-          {preview && <CardExperience card={{ ...f, design: t.design }} />}
+          {preview && <CardExperience card={{ ...f, message: editable ? f.message : t.message, design: t.design, inside_bg: t.inside_bg }} />}
         </DialogContent>
       </Dialog>
     </div>

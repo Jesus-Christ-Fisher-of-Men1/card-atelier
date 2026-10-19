@@ -4,19 +4,21 @@ import { Eye, Save, CreditCard, Loader2, MousePointerClick } from "lucide-react"
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { api, formatErr } from "@/lib/api";
-import { blankDesign, withFreshIds, OCCASIONS } from "@/lib/cardKit";
+import { blankDesign, withFreshIds } from "@/lib/cardKit";
 import { CardCanvas } from "@/components/CardCanvas";
 import { ToolPanel } from "@/components/builder/ToolPanel";
 import { Inspector } from "@/components/builder/Inspector";
+import { InsideArtPicker } from "@/components/builder/InsideArtPicker";
 import { MediaFields } from "@/components/MediaPicker";
 import { AiMessageWriter } from "@/components/AiTools";
-import { CardExperience } from "@/components/CardExperience";
+import { CardExperience, InsidePage } from "@/components/CardExperience";
 import { ScripturePicker } from "@/components/ScripturePicker";
 import { CovenantCheck } from "@/components/CovenantCheck";
+import { useOccasions } from "@/hooks/useOccasions";
 
 const field = "w-full text-sm rounded-xl border border-stone-900/15 px-3 py-2 bg-[#FAF7F2] focus:outline-none focus:ring-2 focus:ring-[#E05A47]/40";
-const CARD_META = { title: "My Card", message: "", song_url: "", voice_url: "", video_url: "", recipient_name: "", recipient_email: "", sender_name: "", template_id: null };
-const TPL_META = { title: "New Template", occasion: "Birthday", tier: "classic", published: true, message: "", song_url: "", description: "" };
+const CARD_META = { title: "My Card", message: "", song_url: "", voice_url: "", video_url: "", recipient_name: "", recipient_email: "", sender_name: "", template_id: null, inside_bg: "" };
+const TPL_META = { title: "New Template", occasion: "Birthday", tier: "classic", published: true, message: "", song_url: "", description: "", inside_bg: "", message_editable: true };
 
 function Field({ label, children }) {
   return <label className="block text-xs text-stone-600 space-y-1"><span>{label}</span>{children}</label>;
@@ -37,6 +39,8 @@ export default function Builder({ mode = "card" }) {
   const [pricing, setPricing] = useState({});
   const [locked, setLocked] = useState(false);
   const [covenant, setCovenant] = useState(false);
+  const [view, setView] = useState("front");
+  const [occasions] = useOccasions();
 
   useEffect(() => {
     api.get("/pricing").then((r) => setPricing(r.data));
@@ -52,7 +56,7 @@ export default function Builder({ mode = "card" }) {
     } else if (from) {
       api.get(`/templates/${from}`).then(({ data }) => {
         setDesign(withFreshIds(data.design));
-        setMeta({ ...CARD_META, title: data.title, message: data.message, song_url: data.song_url, template_id: data.id });
+        setMeta({ ...CARD_META, title: data.title, message: data.message, song_url: data.song_url, template_id: data.id, inside_bg: data.inside_bg || "" });
       });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -66,14 +70,14 @@ export default function Builder({ mode = "card" }) {
     const body = {
       title: meta.title, template_id: meta.template_id, kind: "custom", design, message: meta.message, song_url: meta.song_url,
       voice_url: meta.voice_url, video_url: meta.video_url, recipient_name: meta.recipient_name,
-      recipient_email: meta.recipient_email?.trim() || null, sender_name: meta.sender_name,
+      recipient_email: meta.recipient_email?.trim() || null, sender_name: meta.sender_name, inside_bg: meta.inside_bg,
     };
     const { data } = id ? await api.put(`/cards/${id}`, body) : await api.post("/cards", body);
     if (!id) { setId(data.id); nav(`/create/${data.id}`, { replace: true }); }
     return data;
   };
   const saveTemplate = async () => {
-    const body = { title: meta.title, occasion: meta.occasion, tier: meta.tier, published: meta.published, design, message: meta.message, song_url: meta.song_url, description: meta.description };
+    const body = { title: meta.title, occasion: meta.occasion, tier: meta.tier, published: meta.published, design, message: meta.message, song_url: meta.song_url, description: meta.description, inside_bg: meta.inside_bg || "", message_editable: meta.message_editable !== false };
     const { data } = id ? await api.put(`/admin/templates/${id}`, body) : await api.post("/admin/templates", body);
     if (!id) { setId(data.id); nav(`/studio/template/${data.id}`, { replace: true }); }
     return data;
@@ -120,9 +124,21 @@ export default function Builder({ mode = "card" }) {
             </button>
           )}
         </div>
-        <div className="p-6 lg:p-12 flex justify-center">
+        <div className="flex justify-center gap-2 pt-6" data-testid="builder-view-toggle">
+          {[["front", "Front cover"], ["inside", "Inside page"]].map(([k, l]) => (
+            <button key={k} onClick={() => setView(k)} data-testid={`builder-view-${k}`}
+              className={`text-sm px-4 py-1.5 rounded-full border transition-colors ${view === k ? "bg-[#121113] text-white border-[#121113]" : "border-stone-900/15 hover:bg-white"}`}>{l}</button>
+          ))}
+        </div>
+        <div className="p-6 lg:p-10 flex justify-center">
           <div className={`w-full ${design.size === "landscape" ? "max-w-[720px]" : design.size === "square" ? "max-w-[560px]" : "max-w-[460px]"} shadow-[0_30px_60px_-20px_rgba(18,17,19,0.35)] rounded-sm`}>
-            <CardCanvas design={design} editable={!locked} selectedId={sel} onSelect={(i) => { setSel(i); if (i) setSide("element"); }} onChange={changeEl} testId="builder-canvas" />
+            {view === "front" ? (
+              <CardCanvas design={design} editable={!locked} selectedId={sel} onSelect={(i) => { setSel(i); if (i) setSide("element"); }} onChange={changeEl} testId="builder-canvas" />
+            ) : (
+              <div style={{ aspectRatio: { portrait: 5 / 7, square: 1, landscape: 7 / 5 }[design.size] || 5 / 7 }} data-testid="builder-inside-preview">
+                <InsidePage card={meta} small />
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -147,7 +163,7 @@ export default function Builder({ mode = "card" }) {
                 <div className="space-y-3" data-testid="template-settings">
                   <Field label="Occasion">
                     <select className={field} value={meta.occasion} onChange={(e) => m({ occasion: e.target.value })} data-testid="tpl-occasion-select">
-                      {OCCASIONS.map((o) => <option key={o}>{o}</option>)}
+                      {[...new Set([...occasions.map((o) => o.name), meta.occasion])].map((o) => <option key={o}>{o}</option>)}
                     </select>
                   </Field>
                   <Field label="Price tier">
@@ -157,10 +173,19 @@ export default function Builder({ mode = "card" }) {
                     </select>
                   </Field>
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={meta.published} onChange={(e) => m({ published: e.target.checked })} data-testid="tpl-published-checkbox" className="accent-[#E05A47]" /> Published in shop</label>
+                  <div className="rounded-2xl border border-stone-900/10 bg-white p-4 space-y-2" data-testid="tpl-message-mode">
+                    <p className="text-sm font-medium">Inside message</p>
+                    {[[true, "Customer can write their own message"], [false, "Message is fixed (my words only)"]].map(([v, l]) => (
+                      <label key={l} className="flex items-center gap-2 text-sm">
+                        <input type="radio" name="msgmode" checked={(meta.message_editable !== false) === v} onChange={() => m({ message_editable: v })} className="accent-[#E05A47]" data-testid={`tpl-message-${v ? "editable" : "fixed"}`} /> {l}
+                      </label>
+                    ))}
+                  </div>
                 </div>
               )}
-              <Field label={isTpl ? "Default inside message" : "Inside message"}>
-                <textarea className={field} rows={4} value={meta.message} onChange={(e) => m({ message: e.target.value })} data-testid="card-message-input" />
+              <InsideArtPicker value={meta.inside_bg} onChange={(v) => { m({ inside_bg: v }); setView("inside"); }} />
+              <Field label={isTpl ? (meta.message_editable !== false ? "Default inside message (customer can change it)" : "Inside message (fixed)") : "Inside message"}>
+                <textarea className={field} rows={4} value={meta.message} onChange={(e) => m({ message: e.target.value })} onFocus={() => setView("inside")} data-testid="card-message-input" />
               </Field>
               <AiMessageWriter occasion={meta.occasion || meta.title} onUse={(t) => m({ message: t })} />
               <ScripturePicker onUse={(s) => m({ message: meta.message ? `${meta.message}\n\n${s}` : s })} />

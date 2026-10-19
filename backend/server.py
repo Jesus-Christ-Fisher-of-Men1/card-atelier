@@ -5,6 +5,7 @@ import json
 import asyncio
 import logging
 import secrets
+import re
 from html import escape
 from datetime import datetime, timezone, timedelta
 from typing import Optional
@@ -151,7 +152,7 @@ async def _can_read_file(rec: dict, request: Request, card_slug: Optional[str]) 
     if user and user["id"] == rec["owner_id"]:
         return True
     if card_slug:
-        card = await db.cards.find_one({"slug": card_slug, "status": "paid"}, {"_id": 0, "design": 1, "song_url": 1,
+        card = await db.cards.find_one({"slug": card_slug, "status": "paid"}, {"_id": 0, "design": 1, "song_url": 1, "inside_bg": 1,
                                                                                  "voice_url": 1, "video_url": 1})
         return bool(card) and f"/api/files/{rec['storage_path']}" in json.dumps(card)
     return False
@@ -212,9 +213,41 @@ class TemplateIn(BaseModel):
     message: str = ""
     song_url: str = ""
     description: str = ""
+    inside_bg: str = ""
+    message_editable: bool = True
 
 
-@api.get("/templates")
+class OccasionIn(BaseModel):
+    name: str = Field(min_length=2, max_length=40)
+
+
+DEFAULT_OCCASIONS = ["Birthday", "Love", "Thank You", "Congratulations", "Holiday", "Wedding", "Get Well",
+                     "Sympathy", "General"]
+
+
+@api.get("/occasions")
+async def list_occasions():
+    if await db.occasions.count_documents({}) == 0:
+        await db.occasions.insert_many([{"id": new_id(), "name": n, "created_at": now_iso()} for n in DEFAULT_OCCASIONS])
+    return await db.occasions.find({}, {"_id": 0}).sort("created_at", 1).to_list(500)
+
+
+@api.post("/admin/occasions")
+async def add_occasion(body: OccasionIn, admin=Depends(require_admin)):
+    name = body.name.strip()
+    if await db.occasions.find_one({"name": {"$regex": f"^{re.escape(name)}$", "$options": "i"}}):
+        raise HTTPException(400, "That occasion already exists")
+    occ = {"id": new_id(), "name": name, "created_at": now_iso()}
+    await db.occasions.insert_one(occ)
+    return clean(occ)
+
+
+@api.delete("/admin/occasions/{oid}")
+async def delete_occasion(oid: str, admin=Depends(require_admin)):
+    res = await db.occasions.delete_one({"id": oid})
+    if not res.deleted_count:
+        raise HTTPException(404, "Occasion not found")
+    return {"ok": True}@api.get("/templates")
 async def list_templates(occasion: Optional[str] = None):
     q = {"published": True}
     if occasion:
@@ -279,6 +312,7 @@ class CardIn(BaseModel):
     recipient_name: str = ""
     recipient_email: Optional[EmailStr] = None
     sender_name: str = ""
+    inside_bg: str = ""
 
 
 async def owned_card(cid: str, user: dict) -> dict:
@@ -291,9 +325,13 @@ async def owned_card(cid: str, user: dict) -> dict:
 async def resolve_card(body: CardIn) -> dict:
     data = body.model_dump()
     if body.kind == "premade" and body.template_id:
-        t = await db.templates.find_one({"id": body.template_id, "published": True}, {"_id": 0, "tier": 1, "design": 1})
+        t = await db.templates.find_one({"id": body.template_id, "published": True},
+                                        {"_id": 0, "tier": 1, "design": 1, "inside_bg": 1, "message": 1, "message_editable": 1})
         if t:
-            return {**data, "design": t["design"], "tier": t["tier"]}
+            out = {**data, "design": t["design"], "tier": t["tier"], "inside_bg": t.get("inside_bg", "")}
+            if not t.get("message_editable", True):
+                out["message"] = t.get("message", "")
+            return out
     return {**data, "kind": "custom", "tier": "custom"}
 
 
@@ -346,7 +384,7 @@ async def public_card(slug: str):
                                                                         "origin_url": 0})
     if not card:
         raise HTTPException(404, "Card not found")
-    for k in ("design", "song_url", "voice_url", "video_url"):
+    for k in ("design", "song_url", "voice_url", "video_url", "inside_bg"):
         card[k] = _with_card_access(card.get(k), slug)
     return card
 

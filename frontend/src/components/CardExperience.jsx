@@ -7,6 +7,20 @@ import { mediaUrl } from "@/lib/api";
 
 const COLORS = ["#E05A47", "#D4AF37", "#E8A598", "#3A5A40", "#F6E7B0", "#FFFFFF"];
 
+export function InsidePage({ card, small = false }) {
+  const art = card.inside_bg;
+  const bg = art ? { backgroundImage: `url("${mediaUrl(art)}")`, backgroundSize: "cover", backgroundPosition: "center" } : undefined;
+  return (
+    <div className={`w-full h-full flex flex-col justify-center text-center p-[8%] overflow-auto ${art ? "" : "bg-[#FFFDF9] paper-grain"}`} style={bg} data-testid="inside-page">
+      <div className={art ? "bg-white/85 backdrop-blur-sm rounded-xl p-5 shadow-lg" : ""}>
+        <p className={`font-script ${small ? "text-3xl" : "text-4xl"} text-[#E05A47] mb-3`}>Dear {card.recipient_name || "friend"},</p>
+        <p className={`font-display ${small ? "text-base" : "text-lg"} leading-relaxed text-stone-800 whitespace-pre-wrap`}>{card.message || "Thinking of you."}</p>
+        <p className={`font-script ${small ? "text-2xl" : "text-3xl"} text-[#3A5A40] mt-4`}>— {card.sender_name || "With love"}</p>
+      </div>
+    </div>
+  );
+}
+
 function Confetti() {
   const bits = useMemo(() => Array.from({ length: 60 }, (_, i) => ({
     i, left: Math.random() * 100, delay: Math.random() * 1.5, dur: 2.8 + Math.random() * 2.5,
@@ -64,10 +78,8 @@ export function CardExperience({ card, dark = true }) {
                 <div className="flip-face shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] rounded-md overflow-hidden">
                   <CardCanvas design={card.design} testId="experience-card-front" />
                 </div>
-                <div className="flip-face flip-back rounded-md overflow-hidden bg-[#FFFDF9] paper-grain p-[8%] flex flex-col justify-center text-center" data-testid="experience-card-inside">
-                  <p className="font-script text-4xl text-[#E05A47] mb-4">Dear {card.recipient_name || "friend"},</p>
-                  <p className="font-display text-lg leading-relaxed text-stone-800 whitespace-pre-wrap">{card.message || "Thinking of you."}</p>
-                  <p className="font-script text-3xl text-[#3A5A40] mt-6">— {card.sender_name || "With love"}</p>
+                <div className="flip-face flip-back rounded-md overflow-hidden" data-testid="experience-card-inside">
+                  <InsidePage card={card} />
                 </div>
               </div>
             </div>
