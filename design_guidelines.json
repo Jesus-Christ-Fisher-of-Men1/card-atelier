@@ -1,0 +1,99 @@
+{
+  "app_identity": {
+    "name": "VelvetNote Studio & E-Card Haven",
+    "concept": "A dual-experience digital stationery platform merging editorial luxury design with powerful interactive creation (Canvas Card Builder, Pre-made E-Card Shop, Business Admin Studio, and Interactive Animated Card Delivery).",
+    "archetype": "Organic & Tactile Luxury meets Soft Editorial Utility"
+  },
+  "theme": {
+    "default_mode": "light",
+    "supports_toggle": true,
+    "background_light": "#FAF7F2",
+    "surface_light": "#FFFFFF",
+    "border_light": "rgba(18, 17, 19, 0.08)",
+    "background_dark": "#121113",
+    "surface_dark": "#1C1A1E",
+    "border_dark": "rgba(255, 255, 255, 0.1)"
+  },
+  "typography": {
+    "heading_font": "Playfair Display, Cormorant Garamond, serif",
+    "body_font": "Outfit, Plus Jakarta Sans, sans-serif",
+    "mono_font": "JetBrains Mono, monospace",
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-serif tracking-tight leading-tight",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl font-serif tracking-tight",
+      "h3": "text-xl sm:text-2xl font-sans font-semibold",
+      "h4": "text-lg sm:text-xl font-sans font-medium",
+      "body": "text-base leading-relaxed text-slate-700 dark:text-slate-300",
+      "caption": "text-xs uppercase tracking-[0.2em] font-mono text-amber-700 dark:text-amber-400"
+    }
+  },
+  "colors": {
+    "primary": "#E05A47",
+    "primary_hover": "#C84B39",
+    "secondary": "#3A5A40",
+    "accent_gold": "#D4AF37",
+    "accent_rose": "#E8A598",
+    "neutral_dark": "#121113",
+    "neutral_warm": "#FAF7F2",
+    "card_backgrounds": [
+      "#FFFFFF",
+      "#FFFDF9",
+      "#F4EFE6",
+      "#FDF6F0",
+      "#1C1A1E",
+      "#252229"
+    ],
+    "gradients": {
+      "champagne": "linear-gradient(135deg, #FAF7F2 0%, #F3ECE1 100%)",
+      "sunset_glow": "linear-gradient(135deg, #E05A47 0%, #D4AF37 100%)",
+      "velvet_dark": "linear-gradient(135deg, #121113 0%, #2A242E 100%)"
+    }
+  },
+  "layout_patterns": {
+    "navigation": "Sticky semi-transparent header with backdrop-blur-md (bg-white/80 dark:bg-black/80), clear tab switcher between Shop, Interactive Builder, Admin Studio, and Live Previewer.",
+    "storefront_grid": "The Tetris Bento Grid: 12-column staggered grid for featured e-cards with filters for occasion, style, audio type, and price.",
+    "builder_workspace": "Persistent 3-panel layout: Left toolbar (Fonts, Colors, Shapes, Clip Art, Uploads, AI Assistant), Center dynamic canvas with real-time drag/scale controls, Right media & delivery bar (Audio, Recorded Voice, Video Message, Envelope Customizer).",
+    "card_viewer": "Immersive full-screen overlay experience with envelope unfolding animation, particle confetti, background music playback, and voice/video message player.",
+    "admin_studio": "High-density dashboard with tabs for Asset Library (Frames, Clip Art, Sounds), Card Templates Manager, Orders & Analytics, and Pricing setup."
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-xl bg-white/75 dark:bg-zinc-900/75 border border-amber-900/10 dark:border-white/10 shadow-lg",
+    "card_shadows": "shadow-[0_10px_30px_-5px_rgba(18,17,19,0.08)] hover:shadow-[0_20px_40px_-5px_rgba(224,90,71,0.15)] transition-all duration-300",
+    "paper_texture": "subtle grain noise backdrop pattern overlay for authentic physical stationery feel",
+    "tracing_beam": "hover border glow with subtle amber/gold accent stroke"
+  },
+  "component_guidelines": {
+    "buttons": "Pill-shaped or rounded-xl with subtle hover lift (-translate-y-0.5) and crisp active press state. Primary CTAs use Terracotta Coral (#E05A47) or Deep Emerald (#3A5A40).",
+    "canvas_editor": "Interactive SVG/HTML5 canvas allowing drag, scale, rotate, z-index ordering, font swapping, color picking, frame attachment, clip-art stickers, AI message generation, and AI clip-art creation.",
+    "audio_player": "Custom retro vinyl or waveform player with play/pause, volume slider, track selector, and mic voice recorder.",
+    "toasts": "Sonner toasts with custom dark/light theme for saving draft, adding music, AI generation complete, and order checkout success."
+  },
+  "motion_and_interactions": {
+    "framing": "Framer motion page transitions, smooth stagger effects for template grids",
+    "envelope_animation": "3D-like flap open transition, letter sliding out, wax seal breaking effect with audio sound effect",
+    "micro_interactions": "Heart/favorite toggles with spring physics, clip-art sticker snap-to-grid visuals, playback audio visualizer dots"
+  },
+  "image_urls": {
+    "hero_banner": "https://images.unsplash.com/photo-1631084854605-2ea7de264ebf?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "birthday_card_sample": "https://images.unsplash.com/photo-1727323853481-a2aebdf3ff6b?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "gift_celebration": "https://images.pexels.com/photos/5725866/pexels-photo-5725866.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "wedding_invitation": "https://images.pexels.com/photos/14961288/pexels-photo-14961288.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "sealed_envelope": "https://images.pexels.com/photos/11385654/pexels-photo-11385654.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "open_envelope": "https://images.unsplash.com/photo-1723398840367-4d1993648a6a?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "wax_seal_envelope": "https://images.unsplash.com/photo-1646568779353-b9d2b903b3e1?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "holiday_rose_gift": "https://images.pexels.com/photos/31884817/pexels-photo-31884817.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
+  },
+  "instructions_to_main_agent": {
+    "architecture": "Build the 3 main user areas in a unified seamless app (Header tab switcher or seamless route transitions): 1) Pre-made Card Shop (Browse, Filter, Instant Quick-Personalize, Cart & Stripe Modal Checkout), 2) Custom Interactive Card Builder (Full Canvas studio with shapes, frames, clip art, custom images, AI message writer, AI clip-art generator, background sound selector, voice recorder, video upload preview), 3) Business Admin Studio (Template CRUD, asset uploads, clip-art management, audio library manager, orders table). 4) Public Interactive E-Card Delivery Viewer (Envelope opening animation, sound auto-play, personalized voice/video, confetti animation, reply note feature).",
+    "data_test_ids": "Ensure ALL interactive buttons, canvas tools, form inputs, navigation tabs, cards, and modal triggers have data-testid attributes (e.g., data-testid='nav-builder-tab', data-testid='canvas-add-text-btn', data-testid='ai-generate-msg-btn', data-testid='checkout-stripe-btn', data-testid='envelope-open-btn').",
+    "icon_library": "Use lucide-react or @phosphor-icons/react for modern studio icons.",
+    "theme_toggle": "Include dark/light mode toggle in header so users can experience the app in both editorial warm light and dramatic dark themes."
+  },
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Avoid generic centered layouts and standard blue gradients. Use organic warm tones (#FAF7F2, #E05A47, #3A5A40, #D4AF37) with elegant serif typography (Playfair Display/Cormorant Garamond).",
+    "Never use transparent backgrounds on dropdowns, modals, or headers without strong backdrop blur or solid fallback.",
+    "Do NOT use universal CSS transitions like transition: all; specify exact property transitions.",
+    "Every interactive element MUST have hover, active, focus states, and a data-testid attribute for stable testing.",
+    "Provide high quality pre-loaded mock assets (songs like 'Acoustic Birthday', 'Lofi Romance', 'Jazz Celebration', clip-arts, frames, stickers) so the card builder and admin studio are instantly functional and fun to test."
+  ]
+}
