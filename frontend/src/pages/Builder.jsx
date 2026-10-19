@@ -55,6 +55,10 @@ export default function Builder({ mode = "card" }) {
       }).catch(() => toast.error("Card not found"));
     } else if (from) {
       api.get(`/templates/${from}`).then(({ data }) => {
+        if (data.message_editable === false) {
+          toast.error("This card's message is set by the artist");
+          return nav(`/shop/${data.id}`, { replace: true });
+        }
         setDesign(withFreshIds(data.design));
         setMeta({ ...CARD_META, title: data.title, message: data.message, song_url: data.song_url, template_id: data.id, inside_bg: data.inside_bg || "" });
       });
@@ -73,13 +77,13 @@ export default function Builder({ mode = "card" }) {
       recipient_email: meta.recipient_email?.trim() || null, sender_name: meta.sender_name, inside_bg: meta.inside_bg,
     };
     const { data } = id ? await api.put(`/cards/${id}`, body) : await api.post("/cards", body);
-    if (!id) { setId(data.id); nav(`/create/${data.id}`, { replace: true }); }
+    if (!id) { setId(data.id); window.history.replaceState(null, "", `/create/${data.id}`); }
     return data;
   };
   const saveTemplate = async () => {
     const body = { title: meta.title, occasion: meta.occasion, tier: meta.tier, published: meta.published, design, message: meta.message, song_url: meta.song_url, description: meta.description, inside_bg: meta.inside_bg || "", message_editable: meta.message_editable !== false };
     const { data } = id ? await api.put(`/admin/templates/${id}`, body) : await api.post("/admin/templates", body);
-    if (!id) { setId(data.id); nav(`/studio/template/${data.id}`, { replace: true }); }
+    if (!id) { setId(data.id); window.history.replaceState(null, "", `/studio/template/${data.id}`); }
     return data;
   };
   const run = async (key, fn) => {
@@ -136,7 +140,7 @@ export default function Builder({ mode = "card" }) {
               <CardCanvas design={design} editable={!locked} selectedId={sel} onSelect={(i) => { setSel(i); if (i) setSide("element"); }} onChange={changeEl} testId="builder-canvas" />
             ) : (
               <div style={{ aspectRatio: { portrait: 5 / 7, square: 1, landscape: 7 / 5 }[design.size] || 5 / 7 }} data-testid="builder-inside-preview">
-                <InsidePage card={meta} small />
+                <InsidePage card={{ ...meta, message_fixed: isTpl && meta.message_editable === false }} small />
               </div>
             )}
           </div>
@@ -211,7 +215,7 @@ export default function Builder({ mode = "card" }) {
       <Dialog open={preview} onOpenChange={setPreview}>
         <DialogContent className="max-w-5xl w-[96vw] h-[90vh] p-0 overflow-auto bg-[#121113] border-none" data-testid="preview-dialog">
           <DialogTitle className="sr-only">Card preview</DialogTitle>
-          {preview && <CardExperience card={{ ...meta, design }} />}
+          {preview && <CardExperience card={{ ...meta, design, message_fixed: isTpl && meta.message_editable === false }} />}
         </DialogContent>
       </Dialog>
     </div>

@@ -247,7 +247,10 @@ async def delete_occasion(oid: str, admin=Depends(require_admin)):
     res = await db.occasions.delete_one({"id": oid})
     if not res.deleted_count:
         raise HTTPException(404, "Occasion not found")
-    return {"ok": True}@api.get("/templates")
+    return {"ok": True}
+
+
+@api.get("/templates")
 async def list_templates(occasion: Optional[str] = None):
     q = {"published": True}
     if occasion:
@@ -328,11 +331,16 @@ async def resolve_card(body: CardIn) -> dict:
         t = await db.templates.find_one({"id": body.template_id, "published": True},
                                         {"_id": 0, "tier": 1, "design": 1, "inside_bg": 1, "message": 1, "message_editable": 1})
         if t:
-            out = {**data, "design": t["design"], "tier": t["tier"], "inside_bg": t.get("inside_bg", "")}
+            out = {**data, "design": t["design"], "tier": t["tier"], "inside_bg": t.get("inside_bg", ""), "message_fixed": False}
             if not t.get("message_editable", True):
                 out["message"] = t.get("message", "")
+                out["message_fixed"] = True
             return out
-    return {**data, "kind": "custom", "tier": "custom"}
+    if body.template_id:
+        t = await db.templates.find_one({"id": body.template_id}, {"_id": 0, "message_editable": 1})
+        if t and not t.get("message_editable", True):
+            raise HTTPException(400, "This card's message is set by the artist and can't be redesigned")
+    return {**data, "kind": "custom", "tier": "custom", "message_fixed": False}
 
 
 @api.post("/cards")

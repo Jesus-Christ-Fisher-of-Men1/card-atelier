@@ -34,6 +34,12 @@ FastAPI (core.py auth/db, services.py storage/AI/email, seed.py, server.py route
 - AI writer system prompt refuses harmful content
 - Ticker slowed (~37px/s), hero verse duration scales with verse length; scroll-to-top on navigation
 
+## Update (2026-06, artist tools)
+- Inside-page artwork upload (templates + custom cards); message shown on top; Front/Inside toggle in builder
+- Per-template message mode: customer-editable vs fixed (server enforces; fixed cards hide greeting/sign-off & can't be redesigned)
+- Custom occasions managed in Business Studio (/api/occasions)
+- Quick add: multi-upload cover art -> hidden draft templates with auto-detected size
+
 ## Backlog
 - P1: Scheduled delivery date for cards; bulk/corporate sending
 - P1: Mobile bottom-sheet inspector in builder

@@ -37,13 +37,15 @@ function Stats() {
   );
 }
 
-function OccasionManager() {
-  const [list, reload] = useOccasions();
+function OccasionManager({ list, reload }) {
   const [name, setName] = useState("");
   const add = async () => {
     try { await api.post("/admin/occasions", { name }); setName(""); reload(); toast.success("Occasion added"); } catch (e) { toast.error(formatErr(e)); }
   };
-  const del = async (o) => { if (!window.confirm(`Remove occasion "${o.name}"? Existing cards keep their label.`)) return; await api.delete(`/admin/occasions/${o.id}`); reload(); };
+  const del = async (o) => {
+    if (!window.confirm(`Remove occasion "${o.name}"? Existing cards keep their label.`)) return;
+    try { await api.delete(`/admin/occasions/${o.id}`); reload(); } catch (e) { toast.error(formatErr(e)); }
+  };
   return (
     <div className="rounded-2xl bg-[#FFFDF9] border border-stone-900/10 p-5 mb-6" data-testid="occasion-manager">
       <p className="font-medium text-sm mb-3">Occasions / card situations</p>
@@ -70,8 +72,7 @@ const imgSize = (file) => new Promise((res) => {
   img.src = URL.createObjectURL(file);
 });
 
-function QuickAdd({ onDone }) {
-  const [occasions] = useOccasions();
+function QuickAdd({ onDone, occasions }) {
   const [occ, setOcc] = useState("");
   const [tier, setTier] = useState("classic");
   const [progress, setProgress] = useState(null);
@@ -117,6 +118,7 @@ function QuickAdd({ onDone }) {
 
 function Templates() {
   const [list, setList] = useState([]);
+  const [occasions, reloadOcc] = useOccasions();
   const nav = useNavigate();
   const load = () => api.get("/admin/templates").then((r) => setList(r.data));
   useEffect(() => { load(); }, []);
@@ -124,8 +126,8 @@ function Templates() {
   const del = async (t) => { if (!window.confirm(`Delete "${t.title}"?`)) return; await api.delete(`/admin/templates/${t.id}`); toast.success("Template deleted"); load(); };
   return (
     <div>
-      <OccasionManager />
-      <QuickAdd onDone={load} />
+      <OccasionManager list={occasions} reload={reloadOcc} />
+      <QuickAdd onDone={load} occasions={occasions} />
       <div className="flex justify-between items-center mb-6">
         <p className="text-stone-600">{list.length} templates · pre-made cards customers can buy and personalize</p>
         <Link to="/studio/template/new" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#E05A47] text-white hover:bg-[#C84B39]" data-testid="new-template-btn"><Plus size={16} /> New template</Link>
@@ -135,7 +137,7 @@ function Templates() {
           <div key={t.id} className="rounded-2xl bg-[#FFFDF9] border border-stone-900/10 p-4" data-testid={`admin-template-${t.id}`}>
             <div className={`bg-[#F4EFE6] rounded-xl p-4 ${t.published ? "" : "opacity-50"}`}><div className="max-w-[180px] mx-auto shadow"><CardCanvas design={t.design} /></div></div>
             <p className="font-display mt-3 truncate">{t.title}</p>
-            <p className="text-xs text-stone-500">{t.occasion} · {t.tier} · {t.published ? "Live" : "Hidden"}</p>
+            <p className="text-xs text-stone-500">{t.occasion} · {t.tier} · {t.published ? "Live" : "Hidden"}{t.message_editable === false ? " · Fixed message" : ""}{t.inside_bg ? " · Inside art" : ""}</p>
             <div className="flex gap-1 mt-3">
               <button onClick={() => nav(`/studio/template/${t.id}`)} className="p-2 rounded-lg border border-stone-900/15 hover:bg-white" data-testid={`edit-template-${t.id}`}><Pencil size={14} /></button>
               <button onClick={() => toggle(t)} className="p-2 rounded-lg border border-stone-900/15 hover:bg-white" data-testid={`toggle-template-${t.id}`}>{t.published ? <EyeOff size={14} /> : <Eye size={14} />}</button>

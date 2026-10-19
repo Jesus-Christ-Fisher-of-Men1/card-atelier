@@ -1,0 +1,41 @@
+{
+  "summary": "Iteration 4: occasions, quick-add, inside art, fixed/editable message mode, customer inside art privacy, plus shop/Stripe regression. Found and FIXED one CRITICAL bug: in server.py, delete_occasion's `return {\"ok\": True}` and the `@api.get(\"/templates\")` decorator were on the same line, so GET /api/templates returned 404 (shop empty). Python also parsed that line as `{..} @ api.get(...)`, which would have made DELETE /admin/occasions throw a 500. After the fix: backend 53/53 pytest pass (iterations 1-4). All requested UI flows work end to end.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "GET /api/templates (and DELETE /api/admin/occasions/{id})", "issue": "FIXED by testing agent: a missing newline put the @api.get('/templates') decorator on the same line as delete_occasion's return. The route was never registered (404), and the occasion delete would have thrown a 500.", "priority": "CRITICAL"}
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Studio OccasionManager / QuickAdd", "issue": "After you add an occasion, the quick-add-occasion dropdown does not show it until the tab remounts. The cause is that each component calls useOccasions() separately, so their state is not shared. Fix: lift the occasions state into Templates() and pass it plus reload to both components (or use a context).", "selector": "[data-testid='quick-add-occasion']", "priority": "LOW"},
+      {"component": "OccasionManager.del", "issue": "The delete API call has no try/catch, so a failure shows no error toast.", "selector": "[data-testid^='delete-occasion-']", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "InsidePage (fixed-message templates)", "issues": ["'Dear friend,' and '— With love' are always wrapped around the artist's fixed message. The artist may want to control the whole text, e.g. a Pastor Appreciation verse. Consider hiding the default greeting and sign-off for fixed templates, or making them part of the template."]},
+      {"screen": "Builder /create", "issue_note": "minor", "issues": ["After the first save the page navigates to /create/:id and the view toggle resets to 'Front cover', even if the user was on 'Inside page'."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_iteration4_occasions_inside_art.py", "/app/test_reports/pytest/pytest_results_iter4.xml"],
+  "action_items": [
+    "Review the server.py fix at the delete_occasion/list_templates boundary (lines ~245-253) and make sure no similar merged lines exist elsewhere.",
+    "Share occasions state between OccasionManager and QuickAdd so a newly added occasion shows up right away.",
+    "Add try/catch and an error toast to OccasionManager delete.",
+    "Optional: for fixed-message templates, drop the hardcoded 'Dear friend,' / 'With love' wrapper.",
+    "Optional: /create?from=<fixed-template-id> still lets a customer copy a fixed-message template's design into a custom card with their own message (charged at the custom price). Decide whether that is intended."
+  ],
+  "critical_code_review_comments": [
+    "server.py is about 700 lines. Consider splitting it into routers (templates/occasions, cards, files, admin).",
+    "Occasions are referenced by name in templates. Deleting an occasion leaves templates with an orphaned name. That works because the template builder select merges in meta.occasion, but the shop filter chips will not list it.",
+    "PUT /admin/templates (toggle) sends the full template object. That is fine because Pydantic ignores extra fields."
+  ],
+  "updated_files": ["/app/backend/server.py (newline fix before @api.get('/templates'))", "/app/backend/tests/test_iteration4_occasions_inside_art.py"],
+  "success_rate": {"backend": "100% (53/53 after fix)", "frontend": "100% of requested flows"},
+  "test_credentials": "admin@velvetnote.com / Admin@123; customer1@example.com / Test@123 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Created test occasions, templates and cards, then deleted them all. The shop is back to the 8 seeded templates and 9 default occasions. Two test cards were forced to paid in the DB to test the public viewer and were then deleted.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Login testids: auth-email-input, auth-password-input, auth-submit-btn. Public card route is /c/:slug. Verified in the UI: occasion add, duplicate toast, delete via chip X with confirm; quick-add of 2 PNGs gives landscape and portrait sizes, premium tier, Hidden; builder inside-art upload, fixed mode, publish and save; Personalize fixed mode hides the message input, AI writer, scripture picker and customize button; flip and preview show the inside art; Buy redirects to checkout.stripe.com; /create inside art with private owner fetch 200 and Front/Inside toggle; public viewer for a custom card loads private art via ?card=slug (200 anonymous) and also works for a premade card.",
+  "rca of the issue": "GET /api/templates returned 404 because, in server.py, line 250 read `return {\"ok\": True}@api.get(\"/templates\")`. That is valid Python (matrix-multiply operator), so the server started without an error. But list_templates was defined without a decorator and never registered. Likely cause: a bad edit or concat when the occasions endpoints were inserted. Mitigation applied: split the line and restore the decorator. Verified the endpoint now returns 200 with 8 templates."
+}

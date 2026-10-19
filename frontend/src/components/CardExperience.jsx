@@ -13,9 +13,10 @@ export function InsidePage({ card, small = false }) {
   return (
     <div className={`w-full h-full flex flex-col justify-center text-center p-[8%] overflow-auto ${art ? "" : "bg-[#FFFDF9] paper-grain"}`} style={bg} data-testid="inside-page">
       <div className={art ? "bg-white/85 backdrop-blur-sm rounded-xl p-5 shadow-lg" : ""}>
-        <p className={`font-script ${small ? "text-3xl" : "text-4xl"} text-[#E05A47] mb-3`}>Dear {card.recipient_name || "friend"},</p>
+        {!card.message_fixed && <p className={`font-script ${small ? "text-3xl" : "text-4xl"} text-[#E05A47] mb-3`}>Dear {card.recipient_name || "friend"},</p>}
         <p className={`font-display ${small ? "text-base" : "text-lg"} leading-relaxed text-stone-800 whitespace-pre-wrap`}>{card.message || "Thinking of you."}</p>
-        <p className={`font-script ${small ? "text-2xl" : "text-3xl"} text-[#3A5A40] mt-4`}>— {card.sender_name || "With love"}</p>
+        {!card.message_fixed && <p className={`font-script ${small ? "text-2xl" : "text-3xl"} text-[#3A5A40] mt-4`}>— {card.sender_name || "With love"}</p>}
+        {card.message_fixed && card.sender_name && <p className="text-sm text-stone-600 mt-4">from {card.sender_name}</p>}
       </div>
     </div>
   );

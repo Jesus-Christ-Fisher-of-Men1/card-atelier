@@ -70,7 +70,7 @@ export default function Personalize() {
               <div className={`flip-inner ${side === "inside" ? "flipped" : ""}`}>
                 <div className="flip-face shadow-[0_30px_60px_-20px_rgba(18,17,19,0.4)]"><CardCanvas design={t.design} testId="personalize-card-front" /></div>
                 <div className="flip-face flip-back shadow-[0_30px_60px_-20px_rgba(18,17,19,0.4)]" data-testid="personalize-card-inside">
-                  <InsidePage card={{ ...f, inside_bg: t.inside_bg, message: f.message || "Your message appears here." }} small />
+                  <InsidePage card={{ ...f, inside_bg: t.inside_bg, message_fixed: !editable, message: editable ? f.message || "Your message appears here." : t.message }} small />
                 </div>
               </div>
             </div>
@@ -119,7 +119,7 @@ export default function Personalize() {
       <Dialog open={preview} onOpenChange={setPreview}>
         <DialogContent className="max-w-5xl w-[96vw] h-[90vh] p-0 overflow-auto bg-[#121113] border-none" data-testid="personalize-preview-dialog">
           <DialogTitle className="sr-only">Card preview</DialogTitle>
-          {preview && <CardExperience card={{ ...f, message: editable ? f.message : t.message, design: t.design, inside_bg: t.inside_bg }} />}
+          {preview && <CardExperience card={{ ...f, message: editable ? f.message : t.message, message_fixed: !editable, design: t.design, inside_bg: t.inside_bg }} />}
         </DialogContent>
       </Dialog>
     </div>
