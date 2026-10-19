@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, RequireAuth } from "@/context/AuthContext";
 import { Header } from "@/components/Header";
+import { ScriptureTicker } from "@/components/ScriptureTicker";
 import Landing from "@/pages/Landing";
 import AuthPage from "@/pages/AuthPage";
 import Shop from "@/pages/Shop";
@@ -17,6 +18,7 @@ function Shell() {
   return (
     <>
       <Header />
+      <ScriptureTicker />
       <Outlet />
     </>
   );

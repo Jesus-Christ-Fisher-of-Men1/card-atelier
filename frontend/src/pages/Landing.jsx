@@ -5,11 +5,13 @@ import { api } from "@/lib/api";
 import { CardCanvas } from "@/components/CardCanvas";
 import { TemplateTile } from "@/components/TemplateTile";
 import { useAuth } from "@/context/AuthContext";
+import { BRAND, MOTTO } from "@/lib/brand";
+import { RotatingScripture } from "@/components/ScriptureTicker";
 
 const AREAS = [
   { icon: Store, title: "Card Shop", text: "Ready-made e-cards. Pick one, add your message, a song, a voice note or video — and send.", to: "/shop", cta: "Browse cards", tone: "bg-[#FDF6F0]" },
   { icon: Palette, title: "Design Studio", text: "Full creative control: fonts, palettes, shapes, frames, clip art, your photos and AI artwork.", to: "/create", cta: "Start designing", tone: "bg-[#F4EFE6]" },
-  { icon: Briefcase, title: "Business Studio", text: "For the VelvetNote team: craft templates, curate sounds, art and frames, and track orders.", to: "/studio", cta: "Open studio", tone: "bg-[#E9EFE6]", admin: true },
+  { icon: Briefcase, title: "Business Studio", text: "For our ministry team: craft templates, curate sounds, art and frames, and track orders.", to: "/studio", cta: "Open studio", tone: "bg-[#E9EFE6]", admin: true },
 ];
 
 export default function Landing() {
@@ -28,6 +30,7 @@ export default function Landing() {
       <section className="relative overflow-hidden paper-grain">
         <div className="max-w-[1400px] mx-auto px-5 lg:px-10 pt-16 pb-24 grid lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-6 fade-up">
+            <RotatingScripture />
             <p className="caption mb-6">Interactive e-cards · music · voice · video</p>
             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.05] tracking-tight">
               Cards that <em className="text-[#E05A47]">sing</em>, speak<br />and open like opportunity.
@@ -102,10 +105,13 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="bg-[#121113] text-stone-400 py-12">
-        <div className="max-w-[1400px] mx-auto px-5 lg:px-10 flex flex-wrap justify-between gap-6 text-sm">
-          <span className="font-display text-2xl text-[#FAF7F2]">VelvetNote</span>
-          <span>Interactive greeting cards with heart, sound and story.</span>
+      <footer className="bg-[#121113] text-stone-400 py-14">
+        <div className="max-w-[1400px] mx-auto px-5 lg:px-10 flex flex-wrap justify-between items-end gap-8">
+          <div>
+            <span className="font-display font-bold text-2xl text-[#FAF7F2]">{BRAND}</span>
+            <p className="mt-2">Interactive greeting cards with heart, sound and story.</p>
+          </div>
+          <p className="font-display italic text-lg text-[#F6E7B0] max-w-md text-right" data-testid="footer-motto">"{MOTTO.text}" <span className="block not-italic text-sm text-[#D4AF37] font-semibold mt-1">— {MOTTO.ref}</span></p>
         </div>
       </footer>
     </div>

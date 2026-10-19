@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { CardExperience } from "@/components/CardExperience";
+import { BRAND } from "@/lib/brand";
 
 export default function CardViewer() {
   const { slug } = useParams();
@@ -14,7 +15,7 @@ export default function CardViewer() {
         {card && <CardExperience card={card} />}
         {err && <p className="m-auto text-stone-300 font-display text-2xl" data-testid="viewer-not-found">This card could not be found.</p>}
       </div>
-      <p className="text-center text-xs text-stone-500 py-4">Sent with <Link to="/" className="text-[#D4AF37]">VelvetNote</Link></p>
+      <p className="text-center text-xs text-stone-500 py-4">Sent with <Link to="/" className="text-[#D4AF37]">{BRAND}</Link></p>
     </div>
   );
 }

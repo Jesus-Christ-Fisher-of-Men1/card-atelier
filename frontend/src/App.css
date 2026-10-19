@@ -1,16 +1,23 @@
+html { font-size: 18px; }
+
 body {
   background: #FAF7F2;
   color: #121113;
   font-family: "Outfit", sans-serif;
+  font-weight: 500;
 }
+
+button, a { font-weight: 600; }
+h1, h2, h3 { font-weight: 700; }
 
 ::selection { background: #E05A47; color: #fff; }
 
-.font-display { font-family: "Playfair Display", serif; }
+.font-display { font-family: "Playfair Display", serif; font-weight: 700; }
 .font-script { font-family: "Great Vibes", cursive; }
 .caption {
   font-family: "JetBrains Mono", monospace;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #B8962E;
@@ -78,6 +85,11 @@ body {
 .wax-seal:hover { transform: translate(-50%, -50%) scale(1.08); }
 .wax-seal.broken { opacity: 0; transform: translate(-50%, -30%) scale(.6) rotate(25deg); }
 @keyframes pulseSeal { 0%,100% { box-shadow: 0 8px 20px rgba(0,0,0,.35), 0 0 0 0 rgba(212,175,55,.5); } 50% { box-shadow: 0 8px 20px rgba(0,0,0,.35), 0 0 0 14px rgba(212,175,55,0); } }
+
+/* scripture ticker */
+.ticker-track { display: inline-flex; white-space: nowrap; animation: ticker linear infinite; }
+.ticker:hover .ticker-track { animation-play-state: paused; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 /* confetti */
 .confetti-bit { position: absolute; top: -20px; animation-name: fall; animation-timing-function: linear; animation-fill-mode: forwards; }

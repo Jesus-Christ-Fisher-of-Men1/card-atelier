@@ -9,6 +9,7 @@ import { CardCanvas } from "@/components/CardCanvas";
 import { MediaFields } from "@/components/MediaPicker";
 import { AiMessageWriter } from "@/components/AiTools";
 import { CardExperience } from "@/components/CardExperience";
+import { ScripturePicker } from "@/components/ScripturePicker";
 
 const field = "w-full text-sm rounded-xl border border-stone-900/15 px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#E05A47]/40";
 const DRAFT_KEY = "vn_personalize_draft";
@@ -87,6 +88,7 @@ export default function Personalize() {
           <textarea rows={5} className={field} value={f.message} onChange={(e) => set({ message: e.target.value })} onFocus={() => setSide("inside")} data-testid="personalize-message-input" />
         </div>
         <AiMessageWriter occasion={t.occasion} onUse={(m) => { set({ message: m }); setSide("inside"); }} />
+        <ScripturePicker onUse={(s) => { set({ message: f.message ? `${f.message}\n\n${s}` : s }); setSide("inside"); }} />
         <MediaFields value={f} onChange={set} />
         <div className="rounded-2xl border border-stone-900/10 bg-white p-4 grid sm:grid-cols-2 gap-3" data-testid="personalize-delivery">
           <input className={field} placeholder="From (your name)" value={f.sender_name} onChange={(e) => set({ sender_name: e.target.value })} data-testid="personalize-sender-input" />

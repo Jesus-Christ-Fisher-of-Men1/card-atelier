@@ -11,6 +11,7 @@ import { Inspector } from "@/components/builder/Inspector";
 import { MediaFields } from "@/components/MediaPicker";
 import { AiMessageWriter } from "@/components/AiTools";
 import { CardExperience } from "@/components/CardExperience";
+import { ScripturePicker } from "@/components/ScripturePicker";
 
 const field = "w-full text-sm rounded-xl border border-stone-900/15 px-3 py-2 bg-[#FAF7F2] focus:outline-none focus:ring-2 focus:ring-[#E05A47]/40";
 const CARD_META = { title: "My Card", message: "", song_url: "", voice_url: "", video_url: "", recipient_name: "", recipient_email: "", sender_name: "", template_id: null };
@@ -88,7 +89,7 @@ export default function Builder({ mode = "card" }) {
   });
 
   return (
-    <div className="lg:h-[calc(100vh-64px)] flex flex-col lg:flex-row bg-[#FAF7F2]" data-testid="builder-page">
+    <div className="lg:h-[calc(100vh-100px)] flex flex-col lg:flex-row bg-[#FAF7F2]" data-testid="builder-page">
       <aside className="lg:w-[360px] h-[45vh] lg:h-auto border-r border-stone-900/10 bg-[#FFFDF9] shrink-0">
         <ToolPanel design={design} onAdd={addEl} onDesign={(p) => setDesign((d) => ({ ...d, ...p }))} />
       </aside>
@@ -153,6 +154,7 @@ export default function Builder({ mode = "card" }) {
                 <textarea className={field} rows={4} value={meta.message} onChange={(e) => m({ message: e.target.value })} data-testid="card-message-input" />
               </Field>
               <AiMessageWriter occasion={meta.occasion || meta.title} onUse={(t) => m({ message: t })} />
+              <ScripturePicker onUse={(s) => m({ message: meta.message ? `${meta.message}\n\n${s}` : s })} />
               {isTpl ? (
                 <MediaFields value={meta} onChange={(p) => m({ song_url: p.song_url ?? meta.song_url })} />
               ) : (

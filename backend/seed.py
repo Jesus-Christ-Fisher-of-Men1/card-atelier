@@ -96,7 +96,7 @@ async def seed_all():
     admin_password = os.environ["ADMIN_PASSWORD"]
     existing = await db.users.find_one({"email": admin_email})
     if not existing:
-        await db.users.insert_one({"id": new_id(), "email": admin_email, "name": "VelvetNote Admin", "role": "admin",
+        await db.users.insert_one({"id": new_id(), "email": admin_email, "name": "Fisher of Men Admin", "role": "admin",
                                    "password_hash": hash_password(admin_password), "created_at": now_iso()})
     elif not verify_password(admin_password, existing["password_hash"]):
         await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})

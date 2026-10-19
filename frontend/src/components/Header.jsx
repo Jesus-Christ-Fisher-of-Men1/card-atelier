@@ -1,6 +1,7 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { LogOut, Feather } from "lucide-react";
+import { LogOut, Fish } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { BRAND } from "@/lib/brand";
 
 const linkCls = ({ isActive }) =>
   `text-sm tracking-wide px-3 py-2 rounded-full transition-colors duration-200 ${isActive ? "bg-[#121113] text-[#FAF7F2]" : "text-stone-700 hover:bg-stone-200/70"}`;
@@ -12,8 +13,8 @@ export function Header() {
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#FAF7F2]/85 border-b border-stone-900/10" data-testid="site-header">
       <div className="max-w-[1400px] mx-auto px-5 lg:px-10 h-16 flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2" data-testid="logo-link">
-          <span className="w-8 h-8 rounded-full bg-[#E05A47] grid place-items-center text-white"><Feather size={16} /></span>
-          <span className="font-display text-2xl tracking-tight">VelvetNote</span>
+          <span className="w-9 h-9 rounded-full bg-[#E05A47] grid place-items-center text-white shrink-0"><Fish size={18} /></span>
+          <span className="font-display font-bold text-base sm:text-lg tracking-wide leading-tight" data-testid="brand-name">{BRAND}</span>
         </Link>
         <nav className="hidden md:flex items-center gap-1 ml-4">
           <NavLink to="/shop" className={linkCls} data-testid="nav-shop">Card Shop</NavLink>

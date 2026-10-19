@@ -38,7 +38,7 @@ export default function AuthPage({ mode }) {
       <div className="flex items-center justify-center p-8">
         <form onSubmit={submit} className="w-full max-w-sm space-y-4 fade-up">
           <p className="caption">{isReg ? "Create your account" : "Welcome back"}</p>
-          <h1 className="font-display text-4xl">{isReg ? "Join VelvetNote" : "Sign in"}</h1>
+          <h1 className="font-display text-4xl">{isReg ? "Create your account" : "Sign in"}</h1>
           {isReg && <input className={field} placeholder="Your name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required data-testid="auth-name-input" />}
           <input className={field} type="email" placeholder="Email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required data-testid="auth-email-input" />
           <input className={field} type="password" placeholder="Password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required minLength={6} data-testid="auth-password-input" />

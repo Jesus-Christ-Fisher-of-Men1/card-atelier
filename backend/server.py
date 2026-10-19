@@ -341,6 +341,8 @@ def card_email_html(card: dict) -> tuple:
             f'with music and a personal message.</p>'
             f'<p style="margin:32px 0"><a href="{link}" style="background:#E05A47;color:#ffffff;padding:14px 32px;'
             f'border-radius:999px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold">Open your card</a></p>'
+            f'<p style="font-size:15px;font-style:italic;color:#3A5A40;margin:24px 0 8px">&ldquo;Follow me, and I will make you fishers of men.&rdquo;</p>'
+            f'<p style="font-size:12px;color:#B8962E;margin:0 0 16px;font-family:Arial,sans-serif">Matthew 4:19 (KJV)</p>'
             f'<p style="font-size:12px;color:#888;font-family:Arial,sans-serif">Sent with {brand}. '
             f'We never ask for passwords or payment details by email.</p></td></tr></table></td></tr></table>')
     return subject, html
@@ -561,7 +563,7 @@ async def admin_stats(admin=Depends(require_admin)):
 
 @api.get("/")
 async def root():
-    return {"message": "VelvetNote API"}
+    return {"message": "Fisher of Men API"}
 
 
 app.include_router(api)

@@ -1,0 +1,73 @@
+export const BRAND = "JESUS CHRIST FISHER OF MEN";
+export const MOTTO = { text: "Follow me, and I will make you fishers of men.", ref: "Matthew 4:19 (KJV)" };
+
+export const SCRIPTURES = {
+  "Greetings & Salutations": [
+    ["Numbers 6:24-26", "The LORD bless thee, and keep thee: The LORD make his face shine upon thee, and be gracious unto thee: The LORD lift up his countenance upon thee, and give thee peace."],
+    ["3 John 1:2", "Beloved, I wish above all things that thou mayest prosper and be in health, even as thy soul prospereth."],
+    ["Philippians 1:2", "Grace be unto you, and peace, from God our Father, and from the Lord Jesus Christ."],
+    ["Philippians 1:3", "I thank my God upon every remembrance of you."],
+    ["Psalm 20:4", "Grant thee according to thine own heart, and fulfil all thy counsel."],
+  ],
+  "Glad Tidings": [
+    ["Luke 2:10-11", "Fear not: for, behold, I bring you good tidings of great joy, which shall be to all people. For unto you is born this day in the city of David a Saviour, which is Christ the Lord."],
+    ["Isaiah 52:7", "How beautiful upon the mountains are the feet of him that bringeth good tidings, that publisheth peace; that bringeth good tidings of good, that publisheth salvation; that saith unto Zion, Thy God reigneth!"],
+    ["Psalm 118:24", "This is the day which the LORD hath made; we will rejoice and be glad in it."],
+    ["Proverbs 25:25", "As cold waters to a thirsty soul, so is good news from a far country."],
+    ["John 3:16", "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life."],
+    ["Psalm 126:3", "The LORD hath done great things for us; whereof we are glad."],
+    ["Jeremiah 29:11", "For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end."],
+  ],
+  Comfort: [
+    ["Matthew 5:4", "Blessed are they that mourn: for they shall be comforted."],
+    ["Psalm 34:18", "The LORD is nigh unto them that are of a broken heart; and saveth such as be of a contrite spirit."],
+    ["John 14:27", "Peace I leave with you, my peace I give unto you: not as the world giveth, give I unto you. Let not your heart be troubled, neither let it be afraid."],
+    ["2 Corinthians 1:3-4", "Blessed be God, even the Father of our Lord Jesus Christ, the Father of mercies, and the God of all comfort; Who comforteth us in all our tribulation, that we may be able to comfort them which are in any trouble, by the comfort wherewith we ourselves are comforted of God."],
+    ["Isaiah 41:10", "Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee; yea, I will help thee; yea, I will uphold thee with the right hand of my righteousness."],
+    ["Matthew 11:28", "Come unto me, all ye that labour and are heavy laden, and I will give you rest."],
+    ["Psalm 147:3", "He healeth the broken in heart, and bindeth up their wounds."],
+    ["Psalm 23:4", "Yea, though I walk through the valley of the shadow of death, I will fear no evil: for thou art with me; thy rod and thy staff they comfort me."],
+    ["Revelation 21:4", "And God shall wipe away all tears from their eyes; and there shall be no more death, neither sorrow, nor crying, neither shall there be any more pain: for the former things are passed away."],
+    ["1 Peter 5:7", "Casting all your care upon him; for he careth for you."],
+    ["Psalm 30:5", "For his anger endureth but a moment; in his favour is life: weeping may endure for a night, but joy cometh in the morning."],
+    ["Isaiah 40:1", "Comfort ye, comfort ye my people, saith your God."],
+    ["Philippians 4:6-7", "Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God. And the peace of God, which passeth all understanding, shall keep your hearts and minds through Christ Jesus."],
+    ["Psalm 55:22", "Cast thy burden upon the LORD, and he shall sustain thee: he shall never suffer the righteous to be moved."],
+    ["Psalm 46:1", "God is our refuge and strength, a very present help in trouble."],
+  ],
+  Encouragement: [
+    ["Joshua 1:9", "Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest."],
+    ["Philippians 4:13", "I can do all things through Christ which strengtheneth me."],
+    ["Isaiah 40:31", "But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint."],
+    ["Romans 8:28", "And we know that all things work together for good to them that love God, to them who are the called according to his purpose."],
+    ["Deuteronomy 31:6", "Be strong and of a good courage, fear not, nor be afraid of them: for the LORD thy God, he it is that doth go with thee; he will not fail thee, nor forsake thee."],
+    ["Galatians 6:9", "And let us not be weary in well doing: for in due season we shall reap, if we faint not."],
+    ["1 Thessalonians 5:11", "Wherefore comfort yourselves together, and edify one another, even as also ye do."],
+    ["Proverbs 3:5-6", "Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths."],
+    ["Lamentations 3:22-23", "It is of the LORD's mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness."],
+    ["2 Timothy 1:7", "For God hath not given us the spirit of fear; but of power, and of love, and of a sound mind."],
+    ["Hebrews 10:24", "And let us consider one another to provoke unto love and to good works."],
+    ["Nehemiah 8:10", "Neither be ye sorry; for the joy of the LORD is your strength."],
+  ],
+  "Warnings & Exhortation": [
+    ["Ezekiel 33:7", "So thou, O son of man, I have set thee a watchman unto the house of Israel; therefore thou shalt hear the word at my mouth, and warn them from me."],
+    ["Proverbs 27:12", "A prudent man foreseeth the evil, and hideth himself; but the simple pass on, and are punished."],
+    ["Hebrews 3:13", "But exhort one another daily, while it is called To day; lest any of you be hardened through the deceitfulness of sin."],
+    ["Matthew 24:42", "Watch therefore: for ye know not what hour your Lord doth come."],
+    ["Romans 13:11", "And that, knowing the time, that now it is high time to awake out of sleep: for now is our salvation nearer than when we believed."],
+    ["Acts 3:19", "Repent ye therefore, and be converted, that your sins may be blotted out, when the times of refreshing shall come from the presence of the Lord."],
+    ["Proverbs 14:12", "There is a way which seemeth right unto a man, but the end thereof are the ways of death."],
+    ["Galatians 6:7", "Be not deceived; God is not mocked: for whatsoever a man soweth, that shall he also reap."],
+    ["1 Peter 5:8", "Be sober, be vigilant; because your adversary the devil, as a roaring lion, walketh about, seeking whom he may devour."],
+    ["2 Corinthians 6:2", "Behold, now is the accepted time; behold, now is the day of salvation."],
+    ["Isaiah 55:6", "Seek ye the LORD while he may be found, call ye upon him while he is near."],
+    ["Romans 6:23", "For the wages of sin is death; but the gift of God is eternal life through Jesus Christ our Lord."],
+  ],
+  "Fishers of Men": [
+    ["Matthew 4:19", "And he saith unto them, Follow me, and I will make you fishers of men."],
+    ["Mark 16:15", "Go ye into all the world, and preach the gospel to every creature."],
+    ["Luke 5:10", "Fear not; from henceforth thou shalt catch men."],
+  ],
+};
+
+export const ALL_VERSES = Object.values(SCRIPTURES).flat();

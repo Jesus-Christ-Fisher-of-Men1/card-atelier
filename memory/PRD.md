@@ -1,4 +1,4 @@
-# VelvetNote — PRD
+# JESUS CHRIST FISHER OF MEN — Greeting Cards PRD
 
 ## Original problem statement
 Interactive greeting-card platform: (1) Business studio to create/customize e-cards (fonts, color palette, sounds, images, frames, borders, shapes, clip art); (2) customer website to buy cards and fully build their own (images, shapes, size, sounds, music videos, audio messages, AI features); (3) a more limited pre-made card shop (buy + personal message, own song/audio/video). Business side controls all features.
@@ -17,6 +17,13 @@ FastAPI (core.py auth/db, services.py storage/AI/email, seed.py, server.py route
 - Animated card viewer /c/:slug (envelope, confetti, flip, music, voice, video)
 - My Cards (drafts/sent, copy link, resend email); server-side draft reuse for premade
 - Business Studio: stats, template CRUD (builder in template mode), asset library (clipart/frames/backgrounds/sounds/videos + AI), orders
+
+## Update (2026-06, branding)
+- Business renamed to JESUS CHRIST FISHER OF MEN (header, footer, viewer, emails, page title, fish logo)
+- Larger/bolder typography site-wide (18px base, bolder headings/buttons)
+- Motto Matthew 4:19 (KJV) in hero (rotating verses), footer and card emails
+- Site-wide scrolling scripture ticker (54 KJV verses: Greetings, Glad Tidings, Comfort, Encouragement, Warnings, Fishers of Men)
+- Scripture library picker in Personalize and Design Studio ("Add to message")
 
 ## Backlog
 - P1: Scheduled delivery date for cards; bulk/corporate sending
