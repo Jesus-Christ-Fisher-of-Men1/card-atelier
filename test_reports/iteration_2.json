@@ -1,0 +1,30 @@
+{
+  "summary": "Frontend-only re-test (main agent's iteration 3) of 7 requested flows on the public URL using Playwright. All 7 passed: (1) Buy on Personalize, then Back from Stripe, then Buy again in the same tab created only one draft (draft count went up by 1, not 2). (2) Full Stripe 4242 payment worked; /payment/success showed the title, the share link and 'We emailed the card link to delivered@resend.dev'. (3) In the public viewer the envelope opened and the flip button showed the inside message. (4) Deleting a draft in My Cards showed the confirm dialog and removed the card. (5) At 390px the builder shows the save and checkout buttons (y=122) and the canvas (y=244) before the tool panel (y=759), with no horizontal overflow. (6) A library photo could be added and selected; image-blend-checkbox toggled and the canvas image switched to mix-blend-mode multiply. (7) Regression: /create save draft works; admin login opens /studio and all 4 tabs (overview, templates, assets, orders) load with no errors.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Personalize -> Stripe -> Back", "issue": "Coming back from Stripe reloads Personalize and empties the form (recipient name, sender and email are reset to template defaults). Clicking Buy again then saves the empty values over the existing draft, so the user's changes are lost. Fix: on Buy, save the form to sessionStorage under DRAFT_KEY too, or reload the form from the existing draft vn_draft_<tid> when the page mounts.", "affected_selectors": ["[data-testid=personalize-recipient-name-input]", "[data-testid=personalize-buy-btn]"]},
+      {"flow": "Personalize draft dedupe", "issue": "Duplicate drafts are only prevented within one tab, because the draft id is kept in sessionStorage. A new tab or session still creates a new draft. customer1 already has 7 draft cards from earlier runs.", "affected_selectors": ["[data-testid=personalize-buy-btn]"]}
+    ],
+    "design_issues": [
+      {"screen": "Builder at 390px", "issues": ["After selecting an element on the canvas, the Inspector / Element tab sits about 1100px down the page, under the tool panel. The user has to scroll to find it. Consider scrolling to it automatically on selection or using a bottom sheet."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Optional: keep Personalize form values after returning from Stripe (restore them from sessionStorage or from the existing draft).",
+    "Optional: dedupe drafts on the server (for example, reuse an existing unpaid draft for the same user + template_id) rather than relying only on sessionStorage.",
+    "Optional: pass customer_email to Stripe Checkout so the buyer's email is filled in."
+  ],
+  "critical_code_review_comments": [
+    "Personalize.buy: if the stored draft id points to a card that is already paid, the PUT fails and the code falls back to POST. This works, but the PUT error is swallowed without a check; consider removing vn_draft_<tid> after a successful payment.",
+    "PaymentSuccess: polling stops after 15 tries (30s). It would help to give users a retry button in the timeout state."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not tested (skipped per request)", "frontend": "100% (7/7 requested flows)"},
+  "seed_data_creation": "Paid card 'Party Pop' for customer1 (recipient TEST_Paid, delivered@resend.dev, slug vKSsopBHAro). One extra Party Pop draft (recipient TEST_Dup). Builder draft TEST_Iter3 Builder was created and then deleted.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Stripe automation that works: fill #email first (it is required). JS-click card-accordion-item-button, fill card fields, select #billingCountry US, fill #billingAddressLine1 then press Escape, fill locality/postal, select #billingAdministrativeArea CA. Then uncheck #enableStripePass right before submitting (it re-checks itself and then asks for a phone number). Finally JS-click hosted-payment-submit-button. Party Pop template id cc00605c-bf3b-42f0-916a-15c165e89502 (classic, $2.99)."
+}

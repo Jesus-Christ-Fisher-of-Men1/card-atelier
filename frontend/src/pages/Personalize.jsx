@@ -48,7 +48,7 @@ export default function Personalize() {
         ? (await api.put(`/cards/${prev}`, body).catch(() => api.post("/cards", body))).data
         : (await api.post("/cards", body)).data;
       sessionStorage.setItem(draftKey, card.id);
-      sessionStorage.removeItem(DRAFT_KEY);
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ id, f }));
       const { data } = await api.post(`/cards/${card.id}/checkout`, { origin_url: window.location.origin });
       window.location.href = data.checkout_url;
     } catch (e) { toast.error(formatErr(e)); setBusy(false); }

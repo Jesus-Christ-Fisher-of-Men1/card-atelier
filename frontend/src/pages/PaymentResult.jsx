@@ -17,6 +17,7 @@ export function PaymentSuccess() {
         const { data } = await api.get(`/payments/status/${sp.get("session_id")}`);
         if (data.payment_status === "paid") {
           setState("paid");
+          sessionStorage.removeItem("vn_personalize_draft");
           const c = await api.get(`/cards/${sp.get("card")}`);
           setCard(c.data);
           return;

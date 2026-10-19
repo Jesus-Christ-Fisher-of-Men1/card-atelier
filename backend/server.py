@@ -276,7 +276,14 @@ async def resolve_card(body: CardIn) -> dict:
 
 @api.post("/cards")
 async def create_card(body: CardIn, user=Depends(get_current_user)):
-    card = {"id": new_id(), "user_id": user["id"], **(await resolve_card(body)),
+    data = await resolve_card(body)
+    if data["kind"] == "premade":
+        existing = await db.cards.find_one({"user_id": user["id"], "template_id": data["template_id"],
+                                            "kind": "premade", "status": "draft"}, {"_id": 0, "id": 1})
+        if existing:
+            await db.cards.update_one({"id": existing["id"]}, {"$set": data})
+            return await owned_card(existing["id"], user)
+    card = {"id": new_id(), "user_id": user["id"], **data,
             "status": "draft", "slug": secrets.token_urlsafe(8), "email_count": 0, "created_at": now_iso()}
     await db.cards.insert_one(card)
     return clean(card)

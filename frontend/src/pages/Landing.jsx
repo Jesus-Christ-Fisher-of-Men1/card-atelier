@@ -30,7 +30,7 @@ export default function Landing() {
           <div className="lg:col-span-6 fade-up">
             <p className="caption mb-6">Interactive e-cards · music · voice · video</p>
             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.05] tracking-tight">
-              Cards that <em className="text-[#E05A47]">sing</em>, speak<br />and open like magic.
+              Cards that <em className="text-[#E05A47]">sing</em>, speak<br />and open like opportunity.
             </h1>
             <p className="mt-6 text-base md:text-lg text-stone-600 max-w-xl leading-relaxed">
               Choose a beautiful ready-made card or design your own from scratch. Add a song, record your voice, attach a video,
