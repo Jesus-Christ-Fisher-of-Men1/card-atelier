@@ -91,6 +91,10 @@ export function Inspector({ el, design, setDesign, onSelect }) {
             ))}
           </div>
           <Range label="Corner rounding" value={el.radius || 0} min={0} max={50} onChange={(v) => set({ radius: v })} testId="image-radius-slider" />
+          <label className="flex items-center gap-2 text-xs text-stone-600">
+            <input type="checkbox" className="accent-[#E05A47]" checked={!!el.blend} onChange={(e) => set({ blend: e.target.checked })} data-testid="image-blend-checkbox" />
+            Remove white background (blend into card)
+          </label>
         </>
       )}
       <Range label="Width" value={el.w} min={4} max={120} step={0.5} onChange={(v) => set({ w: v })} testId="el-width-slider" />

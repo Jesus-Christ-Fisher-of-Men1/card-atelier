@@ -39,7 +39,11 @@ export function PaymentSuccess() {
           <div className="fade-up">
             <CheckCircle2 className="mx-auto text-[#3A5A40]" size={52} />
             <h1 className="font-display text-4xl mt-4" data-testid="payment-success-title">Your card is on its way!</h1>
-            {card?.recipient_email && <p className="mt-3 text-stone-600 flex items-center justify-center gap-2"><Mail size={16} /> We emailed the card link to {card.recipient_email}</p>}
+            {card?.recipient_email && (
+              <p className="mt-3 text-stone-600 flex items-center justify-center gap-2" data-testid="email-status">
+                <Mail size={16} /> {card.emailed_at ? `We emailed the card link to ${card.recipient_email}` : "Email delivery is unavailable right now — share the link below."}
+              </p>
+            )}
             {card && (
               <div className="mt-8 rounded-2xl bg-white border border-stone-900/10 p-4 flex items-center gap-2">
                 <span className="flex-1 text-sm font-mono truncate text-left" data-testid="share-link-text">{link}</span>

@@ -96,7 +96,7 @@ export function ToolPanel({ design, onAdd, onDesign }) {
         )}
         {tab === "clipart" && (
           <>
-            <AiClipart onCreated={(a) => { load(); onAdd(makeImage(a.url, ratio)); }} />
+            <AiClipart onCreated={(a) => { load(); onAdd({ ...makeImage(a.url, ratio), blend: true }); }} />
             <p className="caption">Clip art</p>
             <div className="grid grid-cols-3 gap-2">
               {Object.entries(CLIPART).map(([k, c]) => (
@@ -105,7 +105,7 @@ export function ToolPanel({ design, onAdd, onDesign }) {
                 </button>
               ))}
               {of("clipart").map((a) => (
-                <button key={a.id} onClick={() => onAdd(makeImage(a.url, ratio))} data-testid={`add-lib-clipart-${a.id}`} className={`${tile} aspect-square p-2`} title={a.name}>
+                <button key={a.id} onClick={() => onAdd({ ...makeImage(a.url, ratio), blend: !!a.ai })} data-testid={`add-lib-clipart-${a.id}`} className={`${tile} aspect-square p-2`} title={a.name}>
                   <img src={mediaUrl(a.url)} alt={a.name} className="w-full h-full object-contain" />
                 </button>
               ))}

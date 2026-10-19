@@ -41,9 +41,13 @@ export default function Personalize() {
     }
     setBusy(true);
     try {
-      const { data: card } = await api.post("/cards", {
-        title: t.title, template_id: t.id, kind: "premade", design: t.design, ...f, recipient_email: f.recipient_email.trim() || null,
-      });
+      const body = { title: t.title, template_id: t.id, kind: "premade", design: t.design, ...f, recipient_email: f.recipient_email.trim() || null };
+      const draftKey = `vn_draft_${t.id}`;
+      const prev = sessionStorage.getItem(draftKey);
+      const card = prev
+        ? (await api.put(`/cards/${prev}`, body).catch(() => api.post("/cards", body))).data
+        : (await api.post("/cards", body)).data;
+      sessionStorage.setItem(draftKey, card.id);
       sessionStorage.removeItem(DRAFT_KEY);
       const { data } = await api.post(`/cards/${card.id}/checkout`, { origin_url: window.location.origin });
       window.location.href = data.checkout_url;
@@ -64,7 +68,7 @@ export default function Personalize() {
                 <div className="flip-face flip-back bg-[#FFFDF9] paper-grain p-[9%] flex flex-col justify-center text-center shadow-[0_30px_60px_-20px_rgba(18,17,19,0.4)]" data-testid="personalize-card-inside">
                   <p className="font-script text-3xl text-[#E05A47] mb-3">Dear {f.recipient_name || "friend"},</p>
                   <p className="font-display leading-relaxed whitespace-pre-wrap">{f.message || "Your message appears here."}</p>
-                  <p className="font-script text-2xl text-[#3A5A40] mt-4">— {f.sender_name || "You"}</p>
+                  <p className="font-script text-2xl text-[#3A5A40] mt-4">— {f.sender_name || "With love"}</p>
                 </div>
               </div>
             </div>

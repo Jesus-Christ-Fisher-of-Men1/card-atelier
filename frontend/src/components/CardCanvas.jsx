@@ -20,7 +20,7 @@ function ElementBody({ el }) {
   return (
     <img
       src={mediaUrl(el.src)} alt="" draggable={false}
-      style={{ width: "100%", height: "100%", objectFit: el.fit || "contain", borderRadius: `${el.radius || 0}%`, display: "block" }}
+      style={{ width: "100%", height: "100%", objectFit: el.fit || "contain", borderRadius: `${el.radius || 0}%`, display: "block", mixBlendMode: el.blend ? "multiply" : undefined }}
     />
   );
 }

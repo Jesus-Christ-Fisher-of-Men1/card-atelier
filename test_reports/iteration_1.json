@@ -1,0 +1,52 @@
+{
+  "summary": "First full E2E run of VelvetNote. Backend: 21 pytest tests run, 20 passed (95%), covering auth, catalog, admin role checks and CRUD, uploads/files, cards, Stripe checkout and webhook signature, and AI message SSE. The one failure is the brute-force lockout, which does not work behind the ingress. Frontend: the shop, personalize, Stripe and builder flows all passed. Landing CTAs, shop with 8 templates and occasion filters, Personalize (message, flip, AI writer streaming plus 'use' button, song select, envelope preview, flip to the inside, logged-out Buy -> /login?next -> back) all work. One full Stripe payment with 4242 card succeeded (/payment/success showed the title and share link; My Cards shows SENT; public /c/:slug renders with the song and the message; an invalid slug shows 'not found'). The cancel page works. In Design Studio all 6 tool tabs work: text/shape/clipart add, background color/gradient, card size, frame, the element inspector (edit, font select, duplicate/layer/delete) and dragging on the canvas. Save draft goes to /create/:id and survives a reload; the Message & Media tab fields are present; checkout reaches Stripe at $6.99. AI clipart via Gemini returned an image in about 10s and added it to the canvas. Business Studio: admin lands on /studio; customers and logged-out users are redirected. Overview stats, template publish toggle (hidden from the shop), new template (Wedding/premium, shows in the shop), template delete, asset upload/delete and the Orders table all work. The customer-facing frontend has no console errors.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "POST /api/auth/login", "issue": "The brute-force lockout does not work in the deployed setup. The identifier is f'{request.client.host}:{email}'. Behind the k8s ingress, request.client.host is the ingress/proxy pod IP, and it changes between requests. Failed attempts get split across several identifiers, so 5 bad passwords followed by the correct one returns 200 instead of 429. In the DB the user had count=2 on one IP after 5 failures. Fix: use the first IP from X-Forwarded-For (falling back to client.host), or key the lockout on email only.", "priority": "HIGH"}
+    ],
+    "minor": [
+      {"endpoint": "POST /api/cards & PUT /api/cards/{id}", "issue": "Pricing can be bypassed. resolve_tier trusts kind='premade' plus any template_id from the client. A customer can send a fully custom design with kind='premade' and a classic template_id and pay $2.99 instead of $6.99. Fix: make the tier 'custom' whenever the design differs from the template, or only allow premade cards from the template design on the server."},
+      {"endpoint": "CORS (server.py)", "issue": "allow_origin_regex='.*' together with allow_credentials=True reflects any origin while cookies are SameSite=None. Any site can make authenticated requests for a logged-in user. Use an explicit origin list from an env var."},
+      {"endpoint": "DELETE /api/admin/templates/{id}, DELETE /api/assets/{id}", "issue": "Returns 200 {ok:true} even when the id does not exist. Should return 404."},
+      {"endpoint": "GET /api/files/{path}", "issue": "No access control: anyone with the URL can fetch any upload, including voice/video. This is probably fine for share links, but worth noting."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "PaymentResult", "issue": "Always shows 'We emailed the card link to <recipient>' when recipient_email is set, even if sending failed (the 402 insufficient credits case). It should depend on card.emailed_at / email_count.", "selector": "[data-testid='payment-success-page']", "priority": "LOW"},
+      {"component": "Personalize inline preview vs CardExperience", "issue": "With an empty sender, the inline inside preview signs '— You' but the dialog/viewer signs '— With love'. The two should match.", "selector": "[data-testid='personalize-card-inside']", "priority": "LOW"},
+      {"component": "MyCards", "issue": "Deleting a draft has no confirmation; a single click deletes it. Premade drafts have no Edit action, only Checkout and Delete.", "selector": "[data-testid^='delete-card-']", "priority": "LOW"}
+    ],
+    "integration_issues": [
+      {"flow": "Personalize Buy", "issue": "Every Buy click POSTs a new card. An abandoned or cancelled checkout leaves a duplicate draft each time; My Cards collected 5+ identical 'Sunshine Get Well' drafts. Reuse the existing draft for the same template/session, or update it.", "affected_selectors": ["[data-testid='personalize-buy-btn']"]}
+    ],
+    "design_issues": [
+      {"screen": "Design Studio mobile (390px)", "issues": ["The tool panel and the Message & Media panel stack first. The canvas and the Save/Buy buttons are not visible above the fold, so users have to scroll a lot to see the card they are editing."]},
+      {"screen": "AI clipart", "issues": ["Generated clipart has an opaque white background box that covers elements behind it on colored cards. Consider removing the background or adding a 'blend/multiply' option."]},
+      {"screen": "Payment success", "issues": ["The content looks low-opacity/faded in the screenshot right after load (possibly a fade-in animation). Check that the final opacity is 1."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_velvetnote_api.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "HIGH: Fix the login lockout identifier so it works behind the ingress (X-Forwarded-For first IP, or email-based key).",
+    "Close the tier bypass: do not trust the client's kind/template_id when the design is custom.",
+    "Restrict CORS origins (explicit list from env) since credentials are allowed.",
+    "PaymentResult: only claim 'We emailed...' when the email actually sent (emailed_at).",
+    "Avoid creating duplicate draft cards on repeated Buy clicks in Personalize.",
+    "Optional: confirm before deleting a draft; return 404 on deleting missing templates/assets; improve the mobile builder layout (canvas first)."
+  ],
+  "critical_code_review_comments": [
+    "server.py login(): request.client.host behind the proxy breaks the lockout (confirmed by test).",
+    "server.py resolve_tier(): the price tier comes from client-controlled fields.",
+    "server.py CORS: wildcard origin regex with credentials.",
+    "Auth playbook checks: bcrypt $2b$ hashes OK; cookies set httpOnly+Secure+SameSite=None OK; seed_admin updates the password if it changed OK; lockout FAILS; CORS not explicit."
+  ],
+  "updated_files": ["/app/backend/tests/test_velvetnote_api.py"],
+  "success_rate": {"backend": "95% (20/21)", "frontend": "~95% (all requested flows work; only minor UX issues)"},
+  "test_credentials": "admin@velvetnote.com / Admin@123; customer1@example.com / Test@123 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "One paid card for customer1 (card e2f5e4b6-6241-4e0b-a506-0a51ad994205, slug e6uj3uk0W6c, $2.99). Several draft cards for customer1, including the custom card 4be93ee4-1034-4861-a96a-421893c859c9. Two test_*@example.com customers created by pytest. One AI clipart asset (cupcake) in customer1's user assets. Test templates and assets were deleted; the 8 seeded templates are intact and published.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run pytest with REACT_APP_BACKEND_URL exported: tests/test_velvetnote_api.py (test_bruteforce_lockout is expected to fail until the fix). Stripe hosted checkout automation: click [data-testid=card-accordion-item-button] via JS el.click() (a normal click reports 'outside viewport'), fill #cardNumber/#cardExpiry/#cardCvc/#billingName, select #billingCountry US, fill #billingAddressLine1 then press Escape to close the Google autocomplete, fill #billingLocality/#billingPostalCode, select #billingAdministrativeArea CA, uncheck #enableStripePass (Link save, which requires a phone), then JS-click [data-testid=hosted-payment-submit-button]. Studio deletes use window.confirm, so register a dialog accept handler (import asyncio if using ensure_future). Email returns 402 insufficient_credits, which is expected.",
+  "rca of the issue": "Lockout: ident = f'{request.client.host}:{email}'. Uvicorn runs without --proxy-headers / forwarded-allow-ips, so client.host is the ingress hop IP, and it varies per request (seen as 10.79.x.x). Repro: register a user, POST 5 bad logins, then the correct password returns 200 (expected 429). db.login_attempts shows several identifiers for the same email with count < 5. Mitigation: derive the IP from X-Forwarded-For[0] or lock by email."
+}

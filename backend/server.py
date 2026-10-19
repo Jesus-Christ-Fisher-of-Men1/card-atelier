@@ -69,7 +69,9 @@ async def register(body: RegisterIn, response: Response):
 @api.post("/auth/login")
 async def login(body: LoginIn, request: Request, response: Response):
     email = body.email.lower()
-    ident = f"{request.client.host}:{email}"
+    fwd = request.headers.get("x-forwarded-for", "")
+    ip = fwd.split(",")[0].strip() if fwd else request.client.host
+    ident = f"{ip}:{email}"
     att = await db.login_attempts.find_one({"identifier": ident}) or {}
     if att.get("locked_until") and att["locked_until"] > now_iso():
         raise HTTPException(429, "Too many failed attempts. Try again in 15 minutes.")
@@ -173,7 +175,9 @@ async def create_asset(body: AssetIn, admin=Depends(require_admin)):
 
 @api.delete("/assets/{aid}")
 async def delete_asset(aid: str, admin=Depends(require_admin)):
-    await db.assets.update_one({"id": aid}, {"$set": {"is_deleted": True}})
+    res = await db.assets.update_one({"id": aid}, {"$set": {"is_deleted": True}})
+    if not res.matched_count:
+        raise HTTPException(404, "Asset not found")
     return {"ok": True}
 
 
@@ -235,7 +239,9 @@ async def update_template(tid: str, body: TemplateIn, admin=Depends(require_admi
 
 @api.delete("/admin/templates/{tid}")
 async def delete_template(tid: str, admin=Depends(require_admin)):
-    await db.templates.delete_one({"id": tid})
+    res = await db.templates.delete_one({"id": tid})
+    if not res.deleted_count:
+        raise HTTPException(404, "Template not found")
     return {"ok": True}
 
 
@@ -261,17 +267,18 @@ async def owned_card(cid: str, user: dict) -> dict:
     return card
 
 
-async def resolve_tier(body: CardIn) -> str:
+async def resolve_card(body: CardIn) -> dict:
+    data = body.model_dump()
     if body.kind == "premade" and body.template_id:
-        t = await db.templates.find_one({"id": body.template_id}, {"_id": 0, "tier": 1})
+        t = await db.templates.find_one({"id": body.template_id, "published": True}, {"_id": 0, "tier": 1, "design": 1})
         if t:
-            return t["tier"]
-    return "custom"
+            return {**data, "design": t["design"], "tier": t["tier"]}
+    return {**data, "kind": "custom", "tier": "custom"}
 
 
 @api.post("/cards")
 async def create_card(body: CardIn, user=Depends(get_current_user)):
-    card = {"id": new_id(), "user_id": user["id"], **body.model_dump(), "tier": await resolve_tier(body),
+    card = {"id": new_id(), "user_id": user["id"], **(await resolve_card(body)),
             "status": "draft", "slug": secrets.token_urlsafe(8), "email_count": 0, "created_at": now_iso()}
     await db.cards.insert_one(card)
     return clean(card)
@@ -292,8 +299,7 @@ async def update_card(cid: str, body: CardIn, user=Depends(get_current_user)):
     card = await owned_card(cid, user)
     if card["status"] == "paid":
         raise HTTPException(400, "This card is already purchased and can't be edited")
-    upd = {**body.model_dump(), "tier": await resolve_tier(body)}
-    await db.cards.update_one({"id": cid}, {"$set": upd})
+    await db.cards.update_one({"id": cid}, {"$set": await resolve_card(body)})
     return await owned_card(cid, user)
 
 
@@ -554,7 +560,7 @@ async def root():
 
 
 app.include_router(api)
-app.add_middleware(CORSMiddleware, allow_origin_regex=".*", allow_credentials=True,
+app.add_middleware(CORSMiddleware, allow_origins=os.environ["CORS_ORIGINS"].split(","), allow_credentials=True,
                    allow_methods=["*"], allow_headers=["*"])
 
 

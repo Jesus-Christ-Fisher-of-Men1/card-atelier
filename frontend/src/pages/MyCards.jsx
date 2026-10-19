@@ -55,7 +55,7 @@ export default function MyCards() {
                 <>
                   {c.kind === "custom" && <button className={btn} onClick={() => nav(`/create/${c.id}`)} data-testid={`edit-card-${c.id}`}><Pencil size={13} /> Edit</button>}
                   <button className={`${btn} !bg-[#E05A47] !text-white !border-[#E05A47]`} onClick={() => pay(c)} data-testid={`pay-card-${c.id}`}><CreditCard size={13} /> Checkout</button>
-                  <button className={btn} onClick={() => act(() => api.delete(`/cards/${c.id}`), "Deleted")} data-testid={`delete-card-${c.id}`}><Trash2 size={13} /></button>
+                  <button className={btn} onClick={() => window.confirm(`Delete draft "${c.title}"?`) && act(() => api.delete(`/cards/${c.id}`), "Deleted")} data-testid={`delete-card-${c.id}`}><Trash2 size={13} /></button>
                 </>
               )}
             </div>

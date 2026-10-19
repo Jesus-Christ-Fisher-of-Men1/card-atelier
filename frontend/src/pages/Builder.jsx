@@ -88,12 +88,12 @@ export default function Builder({ mode = "card" }) {
   });
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col lg:flex-row bg-[#FAF7F2]" data-testid="builder-page">
+    <div className="lg:h-[calc(100vh-64px)] flex flex-col lg:flex-row bg-[#FAF7F2]" data-testid="builder-page">
       <aside className="lg:w-[360px] h-[45vh] lg:h-auto border-r border-stone-900/10 bg-[#FFFDF9] shrink-0">
         <ToolPanel design={design} onAdd={addEl} onDesign={(p) => setDesign((d) => ({ ...d, ...p }))} />
       </aside>
 
-      <main className="flex-1 overflow-auto relative">
+      <main className="flex-1 overflow-auto relative order-first lg:order-none min-h-[70vh] lg:min-h-0">
         <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 px-6 py-3 bg-[#FAF7F2]/90 backdrop-blur border-b border-stone-900/10">
           <input value={meta.title} onChange={(e) => m({ title: e.target.value })} className="font-display text-xl bg-transparent focus:outline-none border-b border-transparent focus:border-[#E05A47] min-w-0 flex-1" data-testid="builder-title-input" />
           {isTpl && <span className="text-[10px] uppercase tracking-[0.2em] px-2 py-1 rounded-full bg-[#3A5A40] text-white">Template mode</span>}
