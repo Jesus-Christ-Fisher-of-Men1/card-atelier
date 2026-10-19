@@ -69,9 +69,7 @@ async def register(body: RegisterIn, response: Response):
 @api.post("/auth/login")
 async def login(body: LoginIn, request: Request, response: Response):
     email = body.email.lower()
-    fwd = request.headers.get("x-forwarded-for", "")
-    ip = fwd.split(",")[0].strip() if fwd else request.client.host
-    ident = f"{ip}:{email}"
+    ident = f"email:{email}"
     att = await db.login_attempts.find_one({"identifier": ident}) or {}
     if att.get("locked_until") and att["locked_until"] > now_iso():
         raise HTTPException(429, "Too many failed attempts. Try again in 15 minutes.")
