@@ -12,6 +12,7 @@ import { MediaFields } from "@/components/MediaPicker";
 import { AiMessageWriter } from "@/components/AiTools";
 import { CardExperience } from "@/components/CardExperience";
 import { ScripturePicker } from "@/components/ScripturePicker";
+import { CovenantCheck } from "@/components/CovenantCheck";
 
 const field = "w-full text-sm rounded-xl border border-stone-900/15 px-3 py-2 bg-[#FAF7F2] focus:outline-none focus:ring-2 focus:ring-[#E05A47]/40";
 const CARD_META = { title: "My Card", message: "", song_url: "", voice_url: "", video_url: "", recipient_name: "", recipient_email: "", sender_name: "", template_id: null };
@@ -35,6 +36,7 @@ export default function Builder({ mode = "card" }) {
   const [preview, setPreview] = useState(false);
   const [pricing, setPricing] = useState({});
   const [locked, setLocked] = useState(false);
+  const [covenant, setCovenant] = useState(false);
 
   useEffect(() => {
     api.get("/pricing").then((r) => setPricing(r.data));
@@ -82,11 +84,17 @@ export default function Builder({ mode = "card" }) {
     setBusy("");
   };
   const onSave = () => run("save", async () => { await (isTpl ? saveTemplate() : saveCard()); toast.success(isTpl ? "Template saved" : "Draft saved"); });
-  const onCheckout = () => run("pay", async () => {
-    const card = await saveCard();
-    const { data } = await api.post(`/cards/${card.id}/checkout`, { origin_url: window.location.origin });
-    window.location.href = data.checkout_url;
-  });
+  const onCheckout = () => {
+    if (!covenant) {
+      setSide("card");
+      return toast.error("Please agree to the Sending Covenant (below the delivery details) before sending.");
+    }
+    run("pay", async () => {
+      const card = await saveCard();
+      const { data } = await api.post(`/cards/${card.id}/checkout`, { origin_url: window.location.origin, covenant_accepted: true });
+      window.location.href = data.checkout_url;
+    });
+  };
 
   return (
     <div className="lg:h-[calc(100vh-100px)] flex flex-col lg:flex-row bg-[#FAF7F2]" data-testid="builder-page">
@@ -166,6 +174,7 @@ export default function Builder({ mode = "card" }) {
                     <Field label="Recipient name"><input className={field} value={meta.recipient_name} onChange={(e) => m({ recipient_name: e.target.value })} data-testid="recipient-name-input" /></Field>
                     <Field label="Recipient email (we'll email the card link)"><input type="email" className={field} value={meta.recipient_email} onChange={(e) => m({ recipient_email: e.target.value })} data-testid="recipient-email-input" /></Field>
                   </div>
+                  {!locked && <CovenantCheck checked={covenant} onChange={setCovenant} />}
                 </>
               )}
             </>

@@ -46,6 +46,7 @@ export default function AuthPage({ mode }) {
           <button disabled={busy} data-testid="auth-submit-btn" className="w-full inline-flex justify-center items-center gap-2 py-3 rounded-full bg-[#E05A47] text-white hover:bg-[#C84B39] transition-colors disabled:opacity-60">
             {busy && <Loader2 size={16} className="animate-spin" />} {isReg ? "Create account" : "Sign in"}
           </button>
+          {isReg && <p className="text-xs text-stone-500 text-center" data-testid="register-covenant-note">By creating an account you agree to our <Link to="/guidelines" className="underline text-[#3A5A40]">Sending Covenant & Privacy</Link>.</p>}
           <p className="text-sm text-stone-600 text-center">
             {isReg ? "Already have an account? " : "New here? "}
             <Link to={`/${isReg ? "login" : "register"}${next ? `?next=${encodeURIComponent(next)}` : ""}`} className="text-[#E05A47] underline" data-testid="auth-switch-link">{isReg ? "Sign in" : "Create one"}</Link>

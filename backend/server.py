@@ -130,18 +130,41 @@ async def upload(file: UploadFile = File(...), user=Depends(get_current_user)):
     result = await asyncio.to_thread(services.put_object, path, data, ct)
     await db.files.insert_one({"id": new_id(), "storage_path": result["path"], "original_filename": file.filename,
                                "content_type": ct, "size": result.get("size", len(data)), "owner_id": user["id"],
-                               "is_deleted": False, "created_at": now_iso()})
+                               "public": user["role"] == "admin", "is_deleted": False, "created_at": now_iso()})
     return {"url": f"/api/files/{result['path']}", "content_type": ct, "name": file.filename}
 
 
+def _with_card_access(value, slug: str):
+    if isinstance(value, str) and value.startswith("/api/files/"):
+        return f"{value}?card={slug}"
+    if isinstance(value, dict):
+        return {k: _with_card_access(v, slug) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_with_card_access(v, slug) for v in value]
+    return value
+
+
+async def _can_read_file(rec: dict, request: Request, card_slug: Optional[str]) -> bool:
+    if rec.get("public"):
+        return True
+    user = await get_optional_user(request)
+    if user and user["id"] == rec["owner_id"]:
+        return True
+    if card_slug:
+        card = await db.cards.find_one({"slug": card_slug, "status": "paid"}, {"_id": 0, "design": 1, "song_url": 1,
+                                                                                 "voice_url": 1, "video_url": 1})
+        return bool(card) and f"/api/files/{rec['storage_path']}" in json.dumps(card)
+    return False
+
+
 @api.get("/files/{path:path}")
-async def get_file(path: str):
+async def get_file(path: str, request: Request, card: Optional[str] = None):
     rec = await db.files.find_one({"storage_path": path, "is_deleted": False}, {"_id": 0})
-    if not rec:
+    if not rec or not await _can_read_file(rec, request, card):
         raise HTTPException(404, "File not found")
     data, ct = await asyncio.to_thread(services.get_object, path)
-    return Response(content=data, media_type=rec.get("content_type") or ct,
-                    headers={"Cache-Control": "public, max-age=86400"})
+    cache = "public, max-age=86400" if rec.get("public") else "private, max-age=3600"
+    return Response(content=data, media_type=rec.get("content_type") or ct, headers={"Cache-Control": cache})
 
 
 # ---------------- Assets ----------------
@@ -302,7 +325,7 @@ async def get_card(cid: str, user=Depends(get_current_user)):
 @api.put("/cards/{cid}")
 async def update_card(cid: str, body: CardIn, user=Depends(get_current_user)):
     card = await owned_card(cid, user)
-    if card["status"] == "paid":
+    if card["status"] != "draft":
         raise HTTPException(400, "This card is already purchased and can't be edited")
     await db.cards.update_one({"id": cid}, {"$set": await resolve_card(body)})
     return await owned_card(cid, user)
@@ -311,7 +334,7 @@ async def update_card(cid: str, body: CardIn, user=Depends(get_current_user)):
 @api.delete("/cards/{cid}")
 async def delete_card(cid: str, user=Depends(get_current_user)):
     card = await owned_card(cid, user)
-    if card["status"] == "paid":
+    if card["status"] != "draft":
         raise HTTPException(400, "Purchased cards can't be deleted")
     await db.cards.delete_one({"id": cid})
     return {"ok": True}
@@ -323,7 +346,25 @@ async def public_card(slug: str):
                                                                         "origin_url": 0})
     if not card:
         raise HTTPException(404, "Card not found")
+    for k in ("design", "song_url", "voice_url", "video_url"):
+        card[k] = _with_card_access(card.get(k), slug)
     return card
+
+
+class ReportIn(BaseModel):
+    reason: str = Field(min_length=3, max_length=1000)
+
+
+@api.post("/public/cards/{slug}/report")
+async def report_card(slug: str, body: ReportIn):
+    card = await db.cards.find_one({"slug": slug, "status": "paid"}, {"_id": 0, "id": 1, "title": 1})
+    if not card:
+        raise HTTPException(404, "Card not found")
+    if await db.reports.count_documents({"card_id": card["id"]}) >= 20:
+        return {"ok": True}
+    await db.reports.insert_one({"id": new_id(), "card_id": card["id"], "card_title": card["title"],
+                                 "reason": body.reason.strip(), "status": "open", "created_at": now_iso()})
+    return {"ok": True}
 
 
 def card_email_html(card: dict) -> tuple:
@@ -344,6 +385,7 @@ def card_email_html(card: dict) -> tuple:
             f'<p style="font-size:15px;font-style:italic;color:#3A5A40;margin:24px 0 8px">&ldquo;Follow me, and I will make you fishers of men.&rdquo;</p>'
             f'<p style="font-size:12px;color:#B8962E;margin:0 0 16px;font-family:Arial,sans-serif">Matthew 4:19 (KJV)</p>'
             f'<p style="font-size:12px;color:#888;font-family:Arial,sans-serif">Sent with {brand}. '
+            f'If this card is unwelcome, use &ldquo;Report this card&rdquo; on the card page. '
             f'We never ask for passwords or payment details by email.</p></td></tr></table></td></tr></table>')
     return subject, html
 
@@ -385,6 +427,7 @@ async def update_recipient(cid: str, body: RecipientIn, user=Depends(get_current
 # ---------------- Payments ----------------
 class CheckoutIn(BaseModel):
     origin_url: str
+    covenant_accepted: bool = False
 
 
 def _create_session(kwargs: dict):
@@ -404,8 +447,10 @@ def _create_session(kwargs: dict):
 @api.post("/cards/{cid}/checkout")
 async def checkout(cid: str, body: CheckoutIn, user=Depends(get_current_user)):
     card = await owned_card(cid, user)
-    if card["status"] == "paid":
+    if card["status"] != "draft":
         raise HTTPException(400, "Card already purchased")
+    if not body.covenant_accepted:
+        raise HTTPException(400, "Please agree to the Sending Covenant before sending your card")
     tier = TIERS[card["tier"]]
     prices = await asyncio.to_thread(lambda: stripe.Price.list(lookup_keys=[tier["lookup_key"]], active=True, limit=1).data)
     if not prices:
@@ -421,7 +466,7 @@ async def checkout(cid: str, body: CheckoutIn, user=Depends(get_current_user)):
         "session_id": session.id, "user_id": user["id"], "card_id": cid, "lookup_key": tier["lookup_key"],
         "amount": float(price.unit_amount or 0) / 100.0, "currency": price.currency, "status": "initiated",
         "payment_status": "pending", "created_at": now_iso(), "updated_at": now_iso()})
-    await db.cards.update_one({"id": cid}, {"$set": {"origin_url": origin}})
+    await db.cards.update_one({"id": cid}, {"$set": {"origin_url": origin, "covenant_accepted_at": now_iso()}})
     return {"checkout_url": session.url, "session_id": session.id}
 
 
@@ -429,7 +474,7 @@ async def fulfill(session_id: str):
     tx = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
     if not tx or tx["payment_status"] != "paid":
         return
-    before = await db.cards.find_one_and_update({"id": tx["card_id"], "status": {"$ne": "paid"}},
+    before = await db.cards.find_one_and_update({"id": tx["card_id"], "status": "draft"},
                                                 {"$set": {"status": "paid", "paid_at": now_iso(),
                                                           "amount_paid": tx["amount"]}})
     if before:
@@ -544,11 +589,36 @@ async def ai_clipart(body: AiArtIn, user=Depends(get_current_user)):
 # ---------------- Admin ----------------
 @api.get("/admin/orders")
 async def admin_orders(admin=Depends(require_admin)):
-    cards = await db.cards.find({"status": "paid"}, {"_id": 0, "design": 0}).sort("paid_at", -1).to_list(1000)
+    fields = {"_id": 0, "id": 1, "title": 1, "kind": 1, "tier": 1, "amount_paid": 1, "paid_at": 1, "user_id": 1, "status": 1}
+    cards = await db.cards.find({"status": {"$in": ["paid", "disabled"]}}, fields).sort("paid_at", -1).to_list(1000)
     users = {u["id"]: u for u in await db.users.find({}, {"_id": 0, "id": 1, "email": 1, "name": 1}).to_list(10000)}
     for c in cards:
-        c["buyer"] = users.get(c["user_id"], {}).get("email", "")
+        c["buyer"] = users.get(c.pop("user_id"), {}).get("email", "")
     return cards
+
+
+@api.get("/admin/reports")
+async def admin_reports(admin=Depends(require_admin)):
+    reports = await db.reports.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    status = {c["id"]: c["status"] for c in await db.cards.find(
+        {"id": {"$in": [r["card_id"] for r in reports]}}, {"_id": 0, "id": 1, "status": 1}).to_list(1000)}
+    for r in reports:
+        r["card_status"] = status.get(r["card_id"], "deleted")
+    return reports
+
+
+class ModerateIn(BaseModel):
+    disabled: bool
+
+
+@api.post("/admin/cards/{cid}/moderate")
+async def moderate_card(cid: str, body: ModerateIn, admin=Depends(require_admin)):
+    frm, to = ("paid", "disabled") if body.disabled else ("disabled", "paid")
+    res = await db.cards.update_one({"id": cid, "status": frm}, {"$set": {"status": to, "moderated_at": now_iso()}})
+    if not res.matched_count:
+        raise HTTPException(404, "Card not found")
+    await db.reports.update_many({"card_id": cid}, {"$set": {"status": "resolved" if body.disabled else "open"}})
+    return {"ok": True, "status": to}
 
 
 @api.get("/admin/stats")

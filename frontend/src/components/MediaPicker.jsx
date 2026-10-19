@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Mic, Square, Music, Video, Upload, Trash2, Loader2 } from "lucide-react";
+import { Mic, Square, Music, Video, Upload, Trash2, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { api, uploadFile, mediaUrl, formatErr } from "@/lib/api";
 
@@ -113,6 +113,9 @@ export function VideoPicker({ value, onChange }) {
 export function MediaFields({ value, onChange }) {
   return (
     <div className="space-y-3">
+      <p className="flex items-center gap-2 text-xs text-[#3A5A40] font-semibold" data-testid="privacy-note">
+        <Lock size={13} /> Private: your uploads can only be opened by you and the people you send this card to.
+      </p>
       <SongPicker value={value.song_url} onChange={(v) => onChange({ song_url: v })} />
       <VoiceRecorder value={value.voice_url} onChange={(v) => onChange({ voice_url: v })} />
       <VideoPicker value={value.video_url} onChange={(v) => onChange({ video_url: v })} />

@@ -110,6 +110,7 @@ export default function Landing() {
           <div>
             <span className="font-display font-bold text-2xl text-[#FAF7F2]">{BRAND}</span>
             <p className="mt-2">Interactive greeting cards with heart, sound and story.</p>
+            <Link to="/guidelines" className="inline-block mt-3 text-sm underline text-[#F6E7B0]" data-testid="footer-guidelines-link">Sending Covenant & Privacy</Link>
           </div>
           <p className="font-display italic text-lg text-[#F6E7B0] max-w-md text-right" data-testid="footer-motto">"{MOTTO.text}" <span className="block not-italic text-sm text-[#D4AF37] font-semibold mt-1">— {MOTTO.ref}</span></p>
         </div>

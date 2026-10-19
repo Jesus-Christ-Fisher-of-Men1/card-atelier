@@ -7,6 +7,7 @@ import { ScriptureTicker } from "@/components/ScriptureTicker";
 import Landing from "@/pages/Landing";
 import AuthPage from "@/pages/AuthPage";
 import Shop from "@/pages/Shop";
+import Guidelines from "@/pages/Guidelines";
 import Personalize from "@/pages/Personalize";
 import Builder from "@/pages/Builder";
 import MyCards from "@/pages/MyCards";
@@ -34,6 +35,7 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<AuthPage mode="login" />} />
             <Route path="/register" element={<AuthPage mode="register" />} />
+            <Route path="/guidelines" element={<Guidelines />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/shop/:id" element={<Personalize />} />
             <Route path="/create" element={<RequireAuth><Builder key="new" mode="card" /></RequireAuth>} />

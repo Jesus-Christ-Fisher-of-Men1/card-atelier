@@ -15,7 +15,7 @@ export function ScriptureTicker() {
   ));
   return (
     <div className="ticker bg-[#3A5A40] text-[#FAF7F2] text-sm py-2 overflow-hidden" data-testid="scripture-ticker">
-      <div className="ticker-track" style={{ animationDuration: `${verses.length * 12}s` }}>
+      <div className="ticker-track" style={{ animationDuration: `${Math.round(verses.reduce((n, [r, t]) => n + r.length + t.length + 12, 0) * 0.2)}s` }}>
         {row(false)}
         {row(true)}
       </div>
@@ -26,11 +26,11 @@ export function ScriptureTicker() {
 export function RotatingScripture() {
   const verses = useMemo(() => [["Matthew 4:19", MOTTO.text], ...shuffled()], []);
   const [i, setI] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setI((x) => (x + 1) % verses.length), 9000);
-    return () => clearInterval(t);
-  }, [verses.length]);
   const [ref, text] = verses[i];
+  useEffect(() => {
+    const t = setTimeout(() => setI((x) => (x + 1) % verses.length), Math.max(12000, 6000 + text.length * 90));
+    return () => clearTimeout(t);
+  }, [i, text.length, verses.length]);
   return (
     <div className="mb-8 border-l-4 border-[#E05A47] pl-4 min-h-[96px]" data-testid="hero-motto">
       <div key={i} className="fade-up">

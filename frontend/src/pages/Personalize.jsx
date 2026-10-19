@@ -10,6 +10,7 @@ import { MediaFields } from "@/components/MediaPicker";
 import { AiMessageWriter } from "@/components/AiTools";
 import { CardExperience } from "@/components/CardExperience";
 import { ScripturePicker } from "@/components/ScripturePicker";
+import { CovenantCheck } from "@/components/CovenantCheck";
 
 const field = "w-full text-sm rounded-xl border border-stone-900/15 px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#E05A47]/40";
 const DRAFT_KEY = "vn_personalize_draft";
@@ -24,6 +25,7 @@ export default function Personalize() {
   const [side, setSide] = useState("front");
   const [preview, setPreview] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [covenant, setCovenant] = useState(false);
 
   useEffect(() => {
     api.get("/pricing").then((r) => setPricing(r.data));
@@ -50,7 +52,7 @@ export default function Personalize() {
         : (await api.post("/cards", body)).data;
       sessionStorage.setItem(draftKey, card.id);
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ id, f }));
-      const { data } = await api.post(`/cards/${card.id}/checkout`, { origin_url: window.location.origin });
+      const { data } = await api.post(`/cards/${card.id}/checkout`, { origin_url: window.location.origin, covenant_accepted: covenant });
       window.location.href = data.checkout_url;
     } catch (e) { toast.error(formatErr(e)); setBusy(false); }
   };
@@ -95,8 +97,9 @@ export default function Personalize() {
           <input className={field} placeholder="Recipient name" value={f.recipient_name} onChange={(e) => set({ recipient_name: e.target.value })} data-testid="personalize-recipient-name-input" />
           <input className={`${field} sm:col-span-2`} type="email" placeholder="Recipient email — we'll send the card link" value={f.recipient_email} onChange={(e) => set({ recipient_email: e.target.value })} data-testid="personalize-recipient-email-input" />
         </div>
+        <CovenantCheck checked={covenant} onChange={setCovenant} />
         <div className="flex flex-wrap gap-3 pt-2">
-          <button onClick={buy} disabled={busy} data-testid="personalize-buy-btn" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#E05A47] text-white hover:bg-[#C84B39] transition-colors disabled:opacity-60">
+          <button onClick={buy} disabled={busy || !covenant} data-testid="personalize-buy-btn" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#E05A47] text-white hover:bg-[#C84B39] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {busy ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />} Buy & send · ${pricing[t.tier]?.price}
           </button>
           <button onClick={() => setPreview(true)} data-testid="personalize-preview-btn" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-stone-900/15 hover:bg-white transition-colors"><Eye size={16} /> Preview</button>

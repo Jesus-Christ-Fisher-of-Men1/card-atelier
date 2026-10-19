@@ -4,6 +4,7 @@ import { Pencil, Trash2, Link2, Mail, ExternalLink, Plus, CreditCard } from "luc
 import { toast } from "sonner";
 import { api, formatErr } from "@/lib/api";
 import { CardCanvas } from "@/components/CardCanvas";
+import { COVENANT_TEXT } from "@/components/CovenantCheck";
 
 const btn = "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-stone-900/15 hover:bg-white transition-colors";
 
@@ -14,10 +15,13 @@ export default function MyCards() {
   useEffect(() => { load(); }, []);
   const link = (c) => `${window.location.origin}/c/${c.slug}`;
   const act = async (fn, ok) => { try { await fn(); ok && toast.success(ok); load(); } catch (e) { toast.error(formatErr(e)); } };
-  const pay = (c) => act(async () => {
-    const { data } = await api.post(`/cards/${c.id}/checkout`, { origin_url: window.location.origin });
-    window.location.href = data.checkout_url;
-  });
+  const pay = (c) => {
+    if (!window.confirm(`${COVENANT_TEXT}\n\nPress OK to agree and continue to payment.`)) return;
+    act(async () => {
+      const { data } = await api.post(`/cards/${c.id}/checkout`, { origin_url: window.location.origin, covenant_accepted: true });
+      window.location.href = data.checkout_url;
+    });
+  };
 
   return (
     <div className="max-w-[1300px] mx-auto px-5 lg:px-10 py-14" data-testid="my-cards-page">

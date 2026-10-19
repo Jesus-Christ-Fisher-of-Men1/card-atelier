@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Upload, Loader2, DollarSign, Users, LayoutTemplate, Package, Images, FileClock } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Upload, Loader2, DollarSign, Users, LayoutTemplate, Package, Images, FileClock, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { api, uploadFile, mediaUrl, formatErr } from "@/lib/api";
@@ -134,26 +134,54 @@ function Orders() {
   const [list, setList] = useState([]);
   useEffect(() => { api.get("/admin/orders").then((r) => setList(r.data)); }, []);
   return (
-    <div className="rounded-2xl bg-[#FFFDF9] border border-stone-900/10 overflow-x-auto" data-testid="admin-orders-table">
-      <table className="w-full text-sm">
-        <thead className="text-left text-xs uppercase tracking-[0.15em] text-stone-500">
-          <tr>{["Card", "Type", "Buyer", "Recipient", "Amount", "Paid", "Link"].map((h) => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr>
-        </thead>
-        <tbody>
-          {list.map((c) => (
-            <tr key={c.id} className="border-t border-stone-900/5" data-testid={`order-row-${c.id}`}>
-              <td className="px-4 py-3 font-display">{c.title}</td>
-              <td className="px-4 py-3">{c.kind === "premade" ? "Shop" : "Custom"}</td>
-              <td className="px-4 py-3">{c.buyer}</td>
-              <td className="px-4 py-3">{c.recipient_name} <span className="text-stone-500">{c.recipient_email}</span></td>
-              <td className="px-4 py-3 font-mono">${(c.amount_paid || 0).toFixed(2)}</td>
-              <td className="px-4 py-3 text-stone-500">{c.paid_at?.slice(0, 10)}</td>
-              <td className="px-4 py-3"><a href={`/c/${c.slug}`} target="_blank" rel="noreferrer" className="text-[#E05A47] underline">View</a></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {list.length === 0 && <p className="p-6 text-stone-500" data-testid="orders-empty">No orders yet.</p>}
+    <div className="space-y-4">
+      <p className="text-sm text-[#3A5A40] font-semibold flex items-center gap-2" data-testid="orders-privacy-note"><Lock size={14} /> Customer messages, uploads and recipients are private and not shown here.</p>
+      <div className="rounded-2xl bg-[#FFFDF9] border border-stone-900/10 overflow-x-auto" data-testid="admin-orders-table">
+        <table className="w-full text-sm">
+          <thead className="text-left text-xs uppercase tracking-[0.15em] text-stone-500">
+            <tr>{["Card", "Type", "Buyer", "Amount", "Paid", "Status"].map((h) => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {list.map((c) => (
+              <tr key={c.id} className="border-t border-stone-900/5" data-testid={`order-row-${c.id}`}>
+                <td className="px-4 py-3 font-display">{c.title}</td>
+                <td className="px-4 py-3">{c.kind === "premade" ? "Shop" : "Custom"}</td>
+                <td className="px-4 py-3">{c.buyer}</td>
+                <td className="px-4 py-3 font-mono">${(c.amount_paid || 0).toFixed(2)}</td>
+                <td className="px-4 py-3 text-stone-500">{c.paid_at?.slice(0, 10)}</td>
+                <td className="px-4 py-3">{c.status === "disabled" ? <span className="text-red-600">Disabled</span> : "Sent"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {list.length === 0 && <p className="p-6 text-stone-500" data-testid="orders-empty">No orders yet.</p>}
+      </div>
+    </div>
+  );
+}
+
+function Reports() {
+  const [list, setList] = useState([]);
+  const load = () => api.get("/admin/reports").then((r) => setList(r.data));
+  useEffect(() => { load(); }, []);
+  const moderate = async (r, disabled) => {
+    try { await api.post(`/admin/cards/${r.card_id}/moderate`, { disabled }); toast.success(disabled ? "Card link disabled" : "Card link restored"); load(); } catch (e) { toast.error(formatErr(e)); }
+  };
+  return (
+    <div className="space-y-3" data-testid="admin-reports">
+      <p className="text-sm text-stone-600">Reports sent by recipients. Disabling a card turns off its link right away; you never need to open private content.</p>
+      {list.map((r) => (
+        <div key={r.id} className="rounded-2xl bg-[#FFFDF9] border border-stone-900/10 p-5 flex flex-wrap items-start gap-4" data-testid={`report-row-${r.id}`}>
+          <div className="flex-1 min-w-[240px]">
+            <p className="font-display text-lg">{r.card_title}</p>
+            <p className="text-sm text-stone-700 mt-1 whitespace-pre-wrap">"{r.reason}"</p>
+            <p className="text-xs text-stone-500 mt-2">{r.created_at?.slice(0, 16).replace("T", " ")} · card {r.card_status}</p>
+          </div>
+          {r.card_status === "paid" && <button onClick={() => moderate(r, true)} className="px-4 py-2 rounded-full bg-red-600 text-white text-sm" data-testid={`disable-card-${r.id}`}>Disable card link</button>}
+          {r.card_status === "disabled" && <button onClick={() => moderate(r, false)} className="px-4 py-2 rounded-full border border-stone-900/15 text-sm" data-testid={`restore-card-${r.id}`}>Restore</button>}
+        </div>
+      ))}
+      {list.length === 0 && <p className="text-stone-500" data-testid="reports-empty">No reports. Praise God.</p>}
     </div>
   );
 }
@@ -165,7 +193,7 @@ export default function Studio() {
       <h1 className="font-display text-4xl sm:text-5xl mb-8">Run the card house.</h1>
       <Tabs defaultValue="overview">
         <TabsList className="mb-8 bg-[#F4EFE6] rounded-full p-1 h-auto flex-wrap">
-          {[["overview", "Overview"], ["templates", "Card templates"], ["assets", "Asset library"], ["orders", "Orders"]].map(([v, l]) => (
+          {[["overview", "Overview"], ["templates", "Card templates"], ["assets", "Asset library"], ["orders", "Orders"], ["reports", "Reports"]].map(([v, l]) => (
             <TabsTrigger key={v} value={v} className="rounded-full px-5 py-2 data-[state=active]:bg-[#121113] data-[state=active]:text-white" data-testid={`studio-tab-${v}`}>{l}</TabsTrigger>
           ))}
         </TabsList>
@@ -173,6 +201,7 @@ export default function Studio() {
         <TabsContent value="templates"><Templates /></TabsContent>
         <TabsContent value="assets"><Assets /></TabsContent>
         <TabsContent value="orders"><Orders /></TabsContent>
+        <TabsContent value="reports"><Reports /></TabsContent>
       </Tabs>
     </div>
   );
