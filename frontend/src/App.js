@@ -1,5 +1,6 @@
 import "@/App.css";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, RequireAuth } from "@/context/AuthContext";
 import { Header } from "@/components/Header";
@@ -16,6 +17,8 @@ import CardViewer from "@/pages/CardViewer";
 import { PaymentSuccess, PaymentCancel } from "@/pages/PaymentResult";
 
 function Shell() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return (
     <>
       <Header />

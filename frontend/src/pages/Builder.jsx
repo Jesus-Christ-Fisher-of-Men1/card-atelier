@@ -87,7 +87,8 @@ export default function Builder({ mode = "card" }) {
   const onCheckout = () => {
     if (!covenant) {
       setSide("card");
-      return toast.error("Please agree to the Sending Covenant (below the delivery details) before sending.");
+      setTimeout(() => document.querySelector("[data-testid='covenant-check']")?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
+      return toast.error("Please agree to the Sending Covenant before sending.");
     }
     run("pay", async () => {
       const card = await saveCard();

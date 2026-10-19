@@ -578,7 +578,8 @@ async def ai_clipart(body: AiArtIn, user=Depends(get_current_user)):
     path = f"{services.APP_NAME}/ai/{user['id']}/{new_id()}.png"
     result = await asyncio.to_thread(services.put_object, path, data, mime)
     await db.files.insert_one({"id": new_id(), "storage_path": result["path"], "original_filename": "ai.png",
-                               "content_type": mime, "owner_id": user["id"], "is_deleted": False, "created_at": now_iso()})
+                               "content_type": mime, "owner_id": user["id"], "public": user["role"] == "admin",
+                               "is_deleted": False, "created_at": now_iso()})
     asset = {"id": new_id(), "type": "clipart", "name": body.prompt[:40], "url": f"/api/files/{result['path']}",
              "scope": "library" if user["role"] == "admin" else "user", "owner_id": user["id"], "ai": True,
              "is_deleted": False, "created_at": now_iso()}

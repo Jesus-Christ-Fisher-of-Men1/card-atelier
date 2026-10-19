@@ -177,7 +177,7 @@ function Reports() {
             <p className="text-sm text-stone-700 mt-1 whitespace-pre-wrap">"{r.reason}"</p>
             <p className="text-xs text-stone-500 mt-2">{r.created_at?.slice(0, 16).replace("T", " ")} · card {r.card_status}</p>
           </div>
-          {r.card_status === "paid" && <button onClick={() => moderate(r, true)} className="px-4 py-2 rounded-full bg-red-600 text-white text-sm" data-testid={`disable-card-${r.id}`}>Disable card link</button>}
+          {r.card_status === "paid" && <button onClick={() => window.confirm(`Disable the link for "${r.card_title}"?`) && moderate(r, true)} className="px-4 py-2 rounded-full bg-red-600 text-white text-sm" data-testid={`disable-card-${r.id}`}>Disable card link</button>}
           {r.card_status === "disabled" && <button onClick={() => moderate(r, false)} className="px-4 py-2 rounded-full border border-stone-900/15 text-sm" data-testid={`restore-card-${r.id}`}>Restore</button>}
         </div>
       ))}

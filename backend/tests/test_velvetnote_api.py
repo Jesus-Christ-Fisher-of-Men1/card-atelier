@@ -145,7 +145,7 @@ class TestUploads:
         r = customer.post(f"{API}/uploads", files={"file": ("t.png", io.BytesIO(PNG), "image/png")})
         assert r.status_code == 200, r.text
         url = r.json()["url"]
-        g = requests.get(f"{BASE_URL}{url}")
+        g = customer.get(f"{BASE_URL}{url}")  # customer uploads are private -> fetch as owner
         assert g.status_code == 200 and g.content == PNG
         assert g.headers["content-type"].startswith("image/png")
 
@@ -178,7 +178,7 @@ class TestCards:
         assert requests.get(f"{API}/public/cards/{c['slug']}").status_code == 404
         # email before paid
         assert customer.post(f"{API}/cards/{cid}/send-email").status_code == 400
-        co = customer.post(f"{API}/cards/{cid}/checkout", json={"origin_url": BASE_URL})
+        co = customer.post(f"{API}/cards/{cid}/checkout", json={"origin_url": BASE_URL, "covenant_accepted": True})
         assert co.status_code == 200, co.text
         assert co.json()["checkout_url"].startswith("https://checkout.stripe.com")
         st = requests.get(f"{API}/payments/status/{co.json()['session_id']}")

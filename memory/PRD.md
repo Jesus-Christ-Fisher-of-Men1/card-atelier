@@ -25,6 +25,15 @@ FastAPI (core.py auth/db, services.py storage/AI/email, seed.py, server.py route
 - Site-wide scrolling scripture ticker (54 KJV verses: Greetings, Glad Tidings, Comfort, Encouragement, Warnings, Fishers of Men)
 - Scripture library picker in Personalize and Design Studio ("Add to message")
 
+## Update (2026-06, privacy & covenant)
+- Private uploads: customer files readable only by owner or via paid card link (?card=slug); admin cannot access; admin library files public
+- Admin Orders show only title/type/buyer/amount/date/status (no messages, media, recipients)
+- Sending Covenant: required checkbox before checkout (Personalize, Builder, My Cards confirm); server enforces covenant_accepted
+- /guidelines page (Covenant, Privacy, Reporting) linked from footer, register, covenant box
+- Recipients can "Report this card"; Business Studio Reports tab can disable/restore card links without viewing content
+- AI writer system prompt refuses harmful content
+- Ticker slowed (~37px/s), hero verse duration scales with verse length; scroll-to-top on navigation
+
 ## Backlog
 - P1: Scheduled delivery date for cards; bulk/corporate sending
 - P1: Mobile bottom-sheet inspector in builder
